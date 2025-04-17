@@ -2,3 +2,4 @@
 
 ## Members
 - Siyabonga Leyane
+- Jessica Johnson
