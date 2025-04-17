@@ -4,3 +4,4 @@
 - Siyabonga Leyane
 - Jessica Johnson
 - Nnete Teka
+- Rameez Abdool
