@@ -8,10 +8,11 @@ router.get('/', (req, res) => {
 })
 
 router.get('/create', (req, res) => {
-  const newGame = gameData.createGame(gameData.playerID)
+  const currentPlayerID = gameData.playerID
+  const newGame = gameData.createGame(currentPlayerID)
   gameData.activeGames.push(newGame)
 
-  res.cookie('playerID', gameData.playerID)
+  res.cookie('playerID', currentPlayerID)
   res.cookie('gameID', newGame.gameID)
   res.redirect('/gaming/waiting')
   gameData.playerID += 1

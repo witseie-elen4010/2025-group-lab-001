@@ -6,10 +6,18 @@ const gaming = express.Router()
 
 gaming.use((req, res, next) => {
   const gameID = req.cookies.gameID
+  const playerID = req.cookies.playerID
   const selectedGame = gamingData.activeGames.find((game) => Number(game.gameID) === Number(gameID))
+
   if (selectedGame) {
-    req.game = selectedGame
-    next()
+    const player = selectedGame.players.find(p => p.getId() === Number(playerID))
+    if (player) {
+      req.game = selectedGame
+      req.player = player
+      next()
+    } else {
+      res.redirect('/')
+    }
   } else {
     res.redirect('/')
   }
@@ -21,7 +29,9 @@ gaming.get('/waiting', (req, res) => {
 
 gaming.get('/players', (req, res) => {
   const game = req.game
-  res.json({ players: game.players })
+  // Map players to their IDs for the frontend
+  const playerIDs = game.players.map(player => player.getId())
+  res.json({ players: playerIDs })
 })
 
 module.exports = gaming

@@ -6,9 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch('/gaming/players')
     const data = await res.json()
     playerList.innerHTML = ''
-    data.players.forEach(pid => {
+    data.players.forEach(playerId => {
       const li = document.createElement('li')
-      li.textContent = `Player ${pid}`
+      li.textContent = `Player ${playerId}`
       playerList.appendChild(li)
     })
   }
