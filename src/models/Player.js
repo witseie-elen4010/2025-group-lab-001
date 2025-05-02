@@ -1,14 +1,18 @@
 'use strict'
 
-class Player {
-  constructor (id, role = 'civilian') {
-    this.id = id
+const { ROLES } = require('@config/gameConstants')
 
-    if (!['civilian', 'imposter'].includes(role)) {
+class Player {
+  constructor (id, role = ROLES.CIVILIAN) {
+    this.id = id
+    this.#validateRole(role)
+    this.role = role
+  }
+
+  #validateRole (role) {
+    if (!Object.values(ROLES).includes(role)) {
       throw new Error('Invalid role type')
     }
-
-    this.role = role
   }
 
   getId () {
@@ -20,9 +24,7 @@ class Player {
   }
 
   assignRole (role) {
-    if (!['civilian', 'imposter'].includes(role)) {
-      throw new Error('Invalid role type')
-    }
+    this.#validateRole(role)
     this.role = role
   }
 }

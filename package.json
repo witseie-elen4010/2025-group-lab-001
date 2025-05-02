@@ -41,12 +41,23 @@
   "dependencies": {
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
-    "express": "5.1.0"
+    "express": "5.1.0",
+    "module-alias": "^2.2.3"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@src": "src",
+    "@models": "src/models",
+    "@routes": "src/routes",
+    "@config": "src/config",
+    "@views": "src/views",
+    "@public": "src/public"
   },
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.js",
-      "!src/app.js"
+      "!src/app.js",
+      "!src/config/gameConstants.js"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": [
@@ -60,6 +71,17 @@
         "lines": 80,
         "statements": 80
       }
-    }
+    },
+    "moduleNameMapper": {
+      "^@root/(.*)$": "<rootDir>/$1",
+      "^@src/(.*)$": "<rootDir>/src/$1",
+      "^@models/(.*)$": "<rootDir>/src/models/$1",
+      "^@routes/(.*)$": "<rootDir>/src/routes/$1",
+      "^@config/(.*)$": "<rootDir>/src/config/$1",
+      "^@views/(.*)$": "<rootDir>/src/views/$1",
+      "^@public/(.*)$": "<rootDir>/src/public/$1"
+    },
+    "testEnvironment": "node",
+    "verbose": true
   }
 }

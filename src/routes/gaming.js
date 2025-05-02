@@ -1,25 +1,26 @@
+'use strict'
 const express = require('express')
 const path = require('path')
-const gamingData = require('../models/gameData')
+const Game = require('@models/Game')
 
 const gaming = express.Router()
 
 gaming.use((req, res, next) => {
   const gameID = req.cookies.gameID
   const playerID = req.cookies.playerID
-  const selectedGame = gamingData.activeGames.find((game) => Number(game.gameID) === Number(gameID))
+  const selectedGame = Game.findGame(gameID)
 
   if (selectedGame) {
-    const player = selectedGame.players.find(p => p.getId() === Number(playerID))
+    const player = selectedGame.findPlayer(playerID)
     if (player) {
       req.game = selectedGame
       req.player = player
       next()
     } else {
-      res.redirect('/')
+      res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
     }
   } else {
-    res.redirect('/')
+    res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
   }
 })
 

@@ -1,5 +1,5 @@
 /* eslint-env jest */
-const Player = require('../../src/models/Player')
+const Player = require('@models/Player')
 
 describe('Player Class', () => {
   test('should create player with default civilian role', () => {
