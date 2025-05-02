@@ -1,0 +1,34 @@
+{
+  "name": "2025-group-lab-001",
+  "version": "1.0.0",
+  "description": "- Siyabonga Leyane\r - Jessica Johnson\r - Nnete Teka\r - Rameez Abdool",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "standard",
+        "lint:fix": "standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/witseie-elen4010/2025-group-lab-001.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/witseie-elen4010/2025-group-lab-001/issues"
+  },
+  "homepage": "https://github.com/witseie-elen4010/2025-group-lab-001#readme",
+  "devDependencies": {
+    "standard": "^17.1.2"
+  },
+  "standard": {
+    "ignore": [
+      "/node_modules/",
+      "dist"
+    ]
+  }
+}
