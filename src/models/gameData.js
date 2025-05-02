@@ -9,9 +9,9 @@ const activeGames = []
 const gameRoles = ['civilian', 'imposter']
 
 const assignRole = () => {
-  // For now, first player is always imposter, others are civilians
-  // This will be randomized later
-  return activeGames.length === 0 ? 'imposter' : 'civilian'
+  // First player in the first game is imposter, others are civilians
+  const isFirstGame = activeGames.length === 0
+  return isFirstGame ? 'imposter' : 'civilian'
 }
 
 const createGame = (playerID) => {

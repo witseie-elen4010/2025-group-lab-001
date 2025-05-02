@@ -8,7 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "standard",
     "lint:fix": "standard --fix",
     "start": "node src/app.js",
@@ -25,8 +27,10 @@
   },
   "homepage": "https://github.com/witseie-elen4010/2025-group-lab-001#readme",
   "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
     "standard": "^17.1.2",
-    "nodemon": "^3.0.1"
+    "supertest": "^6.3.3"
   },
   "standard": {
     "ignore": [
@@ -35,8 +39,27 @@
     ]
   },
   "dependencies": {
-    "express": "5.1.0",
     "body-parser": "^1.20.2",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.6",
+    "express": "5.1.0"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/app.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "html"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
   }
 }

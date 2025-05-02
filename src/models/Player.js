@@ -3,15 +3,14 @@
 class Player {
   constructor (id, role = 'civilian') {
     this.id = id
-    this.role = role
 
-    // Validate role against allowed types
     if (!['civilian', 'imposter'].includes(role)) {
       throw new Error('Invalid role type')
     }
+
+    this.role = role
   }
 
-  // Getters
   getId () {
     return this.id
   }
@@ -20,7 +19,6 @@ class Player {
     return this.role
   }
 
-  // Role assignment
   assignRole (role) {
     if (!['civilian', 'imposter'].includes(role)) {
       throw new Error('Invalid role type')
