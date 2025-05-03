@@ -34,25 +34,24 @@ const getPlayersCanVote = function (players) {
 }
 
 const mostVotedPlayer = function (votingPlayers) {
+  let votedPlayer = null
   const maxVoted = {
-    id: null,
     numVotes: 0,
     anotherPlayer: false
   }
 
   for (let i = 0; i < votingPlayers.length(); i++) {
     if (votingPlayers[i].getVotesReceived() > maxVoted.numVotes) {
-      maxVoted.id = votingPlayers[i].getId()
+      votedPlayer = votingPlayers[i]
       maxVoted.numVotes = votingPlayers[i].getVotesReceived()
       maxVoted.anotherPlayer = false
     } else if (votingPlayers[i].getVotesReceived() === maxVoted) {
       maxVoted.anotherPlayer = true
     }
   }
-  return maxVoted.anotherPlayer === true ? null : maxVoted.id
+  return maxVoted.anotherPlayer === true ? null : votedPlayer
 }
 
-// Fix this
 const checkGameEnd = function (game) {
   let imposterCount = 0
   let civilianCount = 0

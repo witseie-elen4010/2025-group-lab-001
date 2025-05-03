@@ -51,7 +51,8 @@
     "@routes": "src/routes",
     "@config": "src/config",
     "@views": "src/views",
-    "@public": "src/public"
+    "@public": "src/public",
+    "@controller": "src/controller"
   },
   "jest": {
     "collectCoverageFrom": [

@@ -2,9 +2,9 @@
 const express = require('express')
 const path = require('path')
 const Game = require('@models/Game')
-const votingFunctions = require('../controllers/votingFunctions')
-const { ROLES } = require('../config/gameConstants')
-const { GAME_STATES } = require('../config/gameConstants')
+const votingFunctions = require('@controllers/votingFunctions')
+const { ROLES } = require('@config/gameConstants')
+const { GAME_STATES } = require('@config/gameConstants')
 
 const gaming = express.Router()
 
@@ -62,9 +62,8 @@ gaming.post('/voting', (req, res) => {
     }
   }
 
-  let votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+  const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
   if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
-    votedOutPlayer = game.findPlayer(votedOutPlayer)
     votedOutPlayer.setActive(false)
   }
 
