@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser')
 const gaming = require('@routes/gaming')
 const indexRouter = require('@routes/index')
 
-function createApp () {
+function createApp() {
   const app = express()
 
   // Configure middleware
@@ -29,8 +29,18 @@ function createApp () {
     next(error)
   })
 
-  // Global error handler, more cutom erro handlers can be defined for specific paths
+  // Global error handler
   app.use((err, req, res, next) => {
+    // Log error details on server
+    console.error('Server Error:', {
+      timestamp: new Date().toISOString(),
+      error: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      statusCode: err.status || 500
+    })
+
     res.status(err.status || 500)
     res.sendFile(path.join(__dirname, '..', 'views', 'error.html'))
   })

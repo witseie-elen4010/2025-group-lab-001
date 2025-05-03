@@ -8,6 +8,9 @@ class Player {
     this.#validateRole(role)
     this.role = role
     this.word = word
+    this.active = true
+    this.votesReceived = 0
+    this.hasVoted = false
   }
 
   #validateRole (role) {
@@ -31,6 +34,38 @@ class Player {
   assignRole (role) {
     this.#validateRole(role)
     this.role = role
+  }
+
+  isActive () {
+    return this.active
+  }
+
+  setActive (active) {
+    this.active = Boolean(active)
+  }
+
+  getVotesReceived () {
+    return this.votesReceived
+  }
+
+  increaseVotesReceived () {
+    this.votesReceived += 1
+  }
+
+  decreaseVotesReceived () {
+    this.votesReceived -= 1
+  }
+
+  deleteAllVotes () {
+    this.votesReceived = 0
+  }
+
+  setHasVoted (hasVoted) {
+    this.hasVoted = Boolean(hasVoted)
+  }
+
+  getHasVoted () {
+    return this.hasVoted
   }
 }
 
