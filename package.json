@@ -82,7 +82,8 @@
       "^@routes/(.*)$": "<rootDir>/src/routes/$1",
       "^@config/(.*)$": "<rootDir>/src/config/$1",
       "^@views/(.*)$": "<rootDir>/src/views/$1",
-      "^@public/(.*)$": "<rootDir>/src/public/$1"
+      "^@public/(.*)$": "<rootDir>/src/public/$1",
+      "^@controllers/(.*)$": "<rootDir>/src/controllers/$1"
     },
     "testEnvironment": "node",
     "verbose": true

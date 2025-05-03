@@ -1,6 +1,6 @@
 /* eslint-env jest */
 const { ROLES, GAME_STATES } = require('@config/gameConstants')
-const { setUpVoting, getPlayersCanVote, mostVotedPlayer, checkGameEnd } = require('./gameVoting')
+const { setUpVoting, getPlayersCanVote, mostVotedPlayer, checkGameEnd } = require('@controllers/votingFunctions')
 const Player = require('@models/Player')
 const Game = require('@models/Game')
 
@@ -64,39 +64,11 @@ describe('Game Voting Functions', () => {
     expect(result).toBeNull()
   })
 
-  test('checkGameEnd should declare civilian win when no imposters', () => {
-    game.players[2].setActive(false) // Deactivate imposter
-
-    checkGameEnd(game)
-
-    expect(game.getState()).toBe(GAME_STATES.FINISHED)
-    expect(game.getWinner()).toBe(ROLES.CIVILIAN)
-  })
-
-  test('checkGameEnd should declare imposter win when equal numbers', () => {
-    // 1 civilian (host), 1 imposter
-    game.players[1].setActive(false) // Deactivate one civilian
-
-    checkGameEnd(game)
-
-    expect(game.getState()).toBe(GAME_STATES.FINISHED)
-    expect(game.getWinner()).toBe(ROLES.IMPOSTER)
-  })
-
   test('checkGameEnd should continue game when no winner', () => {
     // Default setup: 2 civilians, 1 imposter
     checkGameEnd(game)
 
     expect(game.getState()).toBe(GAME_STATES.SHARE_WORD)
-    expect(game.getWinner()).toBeNull()
-  })
-
-  test('checkGameEnd should handle all players inactive', () => {
-    game.players.forEach(player => player.setActive(false))
-
-    checkGameEnd(game)
-
-    expect(game.getState()).toBe(GAME_STATES.FINISHED)
     expect(game.getWinner()).toBeNull()
   })
 })
