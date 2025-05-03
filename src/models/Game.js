@@ -1,6 +1,7 @@
 'use strict'
 
 const Player = require('@models/Player')
+const { GAME_STATES } = require('@config/gameConstants')
 
 class Game {
   static #gameCounter = 0
@@ -12,6 +13,9 @@ class Game {
     this.players = []
     this.host = this.#createPlayer(hostId)
     this.players.push(this.host)
+    this.state = GAME_STATES.WAITING
+    this.numVotesOustanding = 0
+    this.winner = null
   }
 
   #createPlayer (playerId) {
@@ -21,6 +25,17 @@ class Game {
 
   #assignRole () {
     return Game.#activeGames.length === 0 ? 'imposter' : 'civilian'
+  }
+
+  getState () {
+    return this.state
+  }
+
+  setState (newState) {
+    if (!Object.values(GAME_STATES).includes(newState)) {
+      throw new Error('Invalid game state')
+    }
+    this.state = newState
   }
 
   static createGame (hostId) {
@@ -37,6 +52,10 @@ class Game {
     return this.players.find(player => player.getId() === Number(playerId))
   }
 
+  getPlayers () {
+    return this.players
+  }
+
   static get activeGames () {
     return Game.#activeGames
   }
@@ -44,6 +63,26 @@ class Game {
   static resetCounter () {
     Game.#gameCounter = 0
     Game.#activeGames.length = 0
+  }
+
+  setNumVotesOustanding (num) {
+    this.numVotesOustanding = num
+  }
+
+  decreaseNumVotesOustsanding () {
+    this.numVotesOustanding -= 1
+  }
+
+  getNumVotesOutstanding () {
+    return this.numVotesOustanding
+  }
+
+  setWinner (winner) {
+    this.winner = winner
+  }
+
+  getWinner () {
+    return this.winner
   }
 }
 

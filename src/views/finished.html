@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Finished</title>
+</head>
+<body>
+    <h1>Game Over</h1>
+    <p>The winner is: <span id="winner"></span></p>
+    
+    <script>
+        document.getElementById('winner').textContent = 
+            "Player " + (new URLSearchParams(window.location.search).get('winner') || 
+            "Unknown")
+    </script>
+</body>
+</html>
