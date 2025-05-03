@@ -1,5 +1,9 @@
 'use strict'
 const express = require('express')
+
+const app = express()
+app.use(express.urlencoded({ extended: true }))
+
 const path = require('path')
 const Game = require('@models/Game')
 
@@ -14,6 +18,12 @@ router.post('/create', (req, res) => {
   const currentPlayerID = playerCounter++
   const { rounds } = req.body
   const totalRounds = parseInt(rounds, 10)
+
+  if (isNaN(totalRounds)) {
+    console.error('Invalid number of rounds selected')
+    return res.status(400).send('Invalid number of rounds selected')
+  }
+
   const newGame = Game.createGame(currentPlayerID, totalRounds)
 
   res.cookie('playerID', currentPlayerID)

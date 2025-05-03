@@ -28,7 +28,7 @@ class Player {
   }
 
   survived () {
-    this.points += 10 // awarded per round
+    this.points += 10 * this.votesReceived // awarded per round, reward player for playing the risky game ;)
   }
 
   getId () {

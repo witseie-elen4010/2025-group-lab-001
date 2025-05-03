@@ -8,7 +8,7 @@ class Game {
   static #activeGames = []
   static gameRoles = ['civilian', 'imposter']
 
-  constructor (hostId, totalRounds = 5) {
+  constructor (hostId, totalRounds = 1) {
     this.gameID = Game.#gameCounter++
     this.players = []
     this.host = this.#createPlayer(hostId)
@@ -47,7 +47,7 @@ class Game {
     return game
   }
 
-  // 'Resets the Game
+  // Resets the Game
   startNewRound () {
     if (this.currentRound >= this.totalRounds) {
       this.isFinished = true
