@@ -13,6 +13,12 @@ describe('Player Class', () => {
     expect(player.getRole()).toBe('imposter')
   })
 
+  test('should create player with specified word', () => {
+    const player = new Player(1, 'civilian', 'apple')
+    expect(player.getWord()).toBe('apple')
+  }
+  )
+
   test('should throw error for invalid role', () => {
     expect(() => {
       // eslint-disable-next-line new-cap

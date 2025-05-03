@@ -80,4 +80,28 @@ describe('Gaming Routes', () => {
       expect(response.type).toBe('text/html')
     })
   })
+
+  describe('Word Sharing API', () => {
+    test('should get word for valid player', async () => {
+      const createResponse = await request(app).get('/create')
+      const cookies = createResponse.headers['set-cookie']
+
+      const response = await request(app)
+        .get('/gaming/wordShare')
+        .set('Cookie', cookies)
+
+      expect(response.status).toBe(200)
+      expect(response.type).toBe('application/json')
+      expect(response.body).toHaveProperty('word')
+    })
+
+    test('should handle invalid requests to word sharing', async () => {
+      const response = await request(app)
+        .get('/gaming/wordShare')
+        .set('Cookie', ['gameID=999; playerID=1'])
+
+      expect(response.status).toBe(403)
+      expect(response.type).toBe('text/html')
+    })
+  })
 })
