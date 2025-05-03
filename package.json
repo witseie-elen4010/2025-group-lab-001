@@ -52,7 +52,7 @@
     "@config": "src/config",
     "@views": "src/views",
     "@public": "src/public",
-    "@controller": "src/controller"
+    "@controllers": "src/controllers"
   },
   "jest": {
     "collectCoverageFrom": [
