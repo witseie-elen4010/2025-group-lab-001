@@ -43,7 +43,8 @@
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "express": "5.1.0",
-    "module-alias": "^2.2.3"
+    "module-alias": "^2.2.3",
+    "socket.io": "4.8.1"
   },
   "_moduleAliases": {
     "@root": ".",
@@ -81,7 +82,8 @@
       "^@routes/(.*)$": "<rootDir>/src/routes/$1",
       "^@config/(.*)$": "<rootDir>/src/config/$1",
       "^@views/(.*)$": "<rootDir>/src/views/$1",
-      "^@public/(.*)$": "<rootDir>/src/public/$1"
+      "^@public/(.*)$": "<rootDir>/src/public/$1",
+      "^@controllers/(.*)$": "<rootDir>/src/controllers/$1"
     },
     "testEnvironment": "node",
     "verbose": true

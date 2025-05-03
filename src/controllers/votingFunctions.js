@@ -1,4 +1,4 @@
-'using strict'
+'use strict'
 
 const { ROLES } = require('@config/gameConstants')
 const { GAME_STATES } = require('@config/gameConstants')
@@ -7,24 +7,21 @@ const { GAME_STATES } = require('@config/gameConstants')
 const setUpVoting = function (game) {
   let numVotesOutstanding = 0
 
-  for (let i = 0; i < game.players.length(); i++) {
+  for (let i = 0; i < game.players.length; i++) {
     game.players[i].deleteAllVotes()
-    game.players[i].setHasVotes(false)
-    numVotesOutstanding += game.players[i].isActive ? 1 : 0
+    game.players[i].setHasVoted(false)
+    numVotesOutstanding += game.players[i].isActive() ? 1 : 0
   }
 
-  game.setNumVotesOutstanding(numVotesOutstanding)
-  // Send the necessary files (HTML, CSS, JavaScript) to client
-
-  setTimeout(checkGameEnd(game.players, game.gameState), 30000)
-  game.gameState.setState(GAME_STATES.VOTING)
+  game.setNumVotesOustanding(numVotesOutstanding)
+  game.setState(GAME_STATES.VOTING)
 }
 
 const getPlayersCanVote = function (players) {
   const votingPlayers = []
   let votingPlayerCount = 0
 
-  for (let i = 0; i < players.length(); i++) {
+  for (let i = 0; i < players.length; i++) {
     if (players[i].isActive()) {
       votingPlayers[votingPlayerCount] = players[i]
       votingPlayerCount += 1
@@ -40,34 +37,35 @@ const mostVotedPlayer = function (votingPlayers) {
     anotherPlayer: false
   }
 
-  for (let i = 0; i < votingPlayers.length(); i++) {
+  for (let i = 0; i < votingPlayers.length; i++) {
     if (votingPlayers[i].getVotesReceived() > maxVoted.numVotes) {
       votedPlayer = votingPlayers[i]
       maxVoted.numVotes = votingPlayers[i].getVotesReceived()
       maxVoted.anotherPlayer = false
-    } else if (votingPlayers[i].getVotesReceived() === maxVoted) {
+    } else if (votingPlayers[i].getVotesReceived() === maxVoted.numVotes) {
       maxVoted.anotherPlayer = true
     }
   }
-  return maxVoted.anotherPlayer === true ? null : votedPlayer
+  return maxVoted.anotherPlayer === true ? null : votedPlayer.getId()
 }
 
 const checkGameEnd = function (game) {
   let imposterCount = 0
   let civilianCount = 0
 
-  for (let i = 0; i < game.players.length(); i++) {
+  for (let i = 0; i < game.players.length; i++) {
     if (game.players[i].isActive()) {
-      imposterCount += game.players[i].role === ROLES.IMPOSTER ? 1 : 0
-      civilianCount += game.players[i].role === ROLES.CIVILIAN ? 1 : 0
+      imposterCount += game.players[i].getRole() === ROLES.IMPOSTER ? 1 : 0
+      civilianCount += game.players[i].getRole() === ROLES.CIVILIAN ? 1 : 0
     }
   }
+
   if (imposterCount === 0) {
     game.setState(GAME_STATES.FINISHED)
-    game.winner = ROLES.CIVILIAN
+    game.setWinner(ROLES.CIVILIAN)
   } else if (imposterCount === civilianCount) {
     game.setState(GAME_STATES.FINISHED)
-    game.winner = ROLES.IMPOSTER
+    game.setWinner(ROLES.IMPOSTER)
   } else {
     game.setState(GAME_STATES.SHARE_WORD)
   }
