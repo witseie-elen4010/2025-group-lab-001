@@ -14,6 +14,8 @@ class Game {
     this.host = this.#createPlayer(hostId)
     this.players.push(this.host)
     this.state = GAME_STATES.WAITING
+    this.numVotesOustanding = 0
+    this.winner = null
   }
 
   #createPlayer (playerId) {
@@ -50,6 +52,10 @@ class Game {
     return this.players.find(player => player.getId() === Number(playerId))
   }
 
+  getPlayers () {
+    return this.players
+  }
+
   static get activeGames () {
     return Game.#activeGames
   }
@@ -57,6 +63,26 @@ class Game {
   static resetCounter () {
     Game.#gameCounter = 0
     Game.#activeGames.length = 0
+  }
+
+  setNumVotesOustanding (num) {
+    this.numVotesOustanding = num
+  }
+
+  decreaseNumVotesOustsanding () {
+    this.numVotesOustanding -= 1
+  }
+
+  getNumVotesOutstanding () {
+    return this.numVotesOustanding
+  }
+
+  setWinner (winner) {
+    this.winner = winner
+  }
+
+  getWinner () {
+    return this.winner
   }
 }
 
