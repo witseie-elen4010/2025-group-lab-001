@@ -62,12 +62,23 @@ gaming.post('/voting', (req, res) => {
     }
   }
 
+  let votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+  if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
+    votedOutPlayer = game.findPlayer(votedOutPlayer)
+    votedOutPlayer.setActive(false)
+  }
+
   if (game.getNumVotesOutstanding() === 0) {
     votingFunctions.checkGameEnd(game)
     // Multi-round mode features can be added here
   } else {
     res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
   }
+})
+
+gaming.get('/finished', (req, res) => {
+  const game = req.game
+  res.sendFile(path.join(__dirname, '..', 'views', 'finished.html?winner=' + game.getWinner()))
 })
 
 module.exports = gaming

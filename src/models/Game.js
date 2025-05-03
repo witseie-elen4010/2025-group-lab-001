@@ -80,6 +80,10 @@ class Game {
   setWinner (winner) {
     this.winner = winner
   }
+
+  getWinner () {
+    return this.winner
+  }
 }
 
 module.exports = Game
