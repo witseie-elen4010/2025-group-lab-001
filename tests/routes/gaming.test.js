@@ -80,4 +80,28 @@ describe('Gaming Routes', () => {
       expect(response.type).toBe('text/html')
     })
   })
+
+  describe('Player ID API', () => {
+    test('should get player ID for valid game', async () => {
+      const createResponse = await request(app).get('/create')
+      const cookies = createResponse.headers['set-cookie']
+
+      const response = await request(app)
+        .get('/gaming/playerID')
+        .set('Cookie', cookies)
+
+      expect(response.status).toBe(200)
+      expect(response.type).toBe('application/json')
+      expect(response.body).toHaveProperty('playerID')
+    })
+
+    test('should handle invalid requests to player ID', async () => {
+      const response = await request(app)
+        .get('/gaming/playerID')
+        .set('Cookie', ['gameID=999; playerID=1'])
+
+      expect(response.status).toBe(403)
+      expect(response.type).toBe('text/html')
+    })
+  })
 })
