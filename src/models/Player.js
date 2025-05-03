@@ -7,6 +7,7 @@ class Player {
     this.id = id
     this.#validateRole(role)
     this.role = role
+    this.word = null
   }
 
   #validateRole (role) {
@@ -21,6 +22,10 @@ class Player {
 
   getRole () {
     return this.role
+  }
+
+  getWord () {
+    return this.word
   }
 
   assignRole (role) {
