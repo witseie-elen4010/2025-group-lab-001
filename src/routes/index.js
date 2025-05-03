@@ -17,6 +17,7 @@ router.get('/create', (req, res) => {
 
   res.cookie('playerID', currentPlayerID)
   res.cookie('gameID', newGame.gameID)
+  res.cookie('hostID', currentPlayerID)
   res.redirect('/gaming/waiting')
 })
 
