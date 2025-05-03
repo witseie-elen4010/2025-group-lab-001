@@ -14,7 +14,8 @@
     "lint": "standard",
     "lint:fix": "standard --fix",
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "build": "npm install && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -51,7 +52,8 @@
     "@routes": "src/routes",
     "@config": "src/config",
     "@views": "src/views",
-    "@public": "src/public"
+    "@public": "src/public",
+    "@controllers": "src/controllers"
   },
   "jest": {
     "collectCoverageFrom": [
