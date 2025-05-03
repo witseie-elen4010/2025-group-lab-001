@@ -44,7 +44,7 @@
     "cookie-parser": "^1.4.6",
     "express": "5.1.0",
     "module-alias": "^2.2.3",
-    "socket.io": "4.8.1"
+    "socket.io": "^4.8.1"
   },
   "_moduleAliases": {
     "@root": ".",

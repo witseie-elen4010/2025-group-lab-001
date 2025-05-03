@@ -10,8 +10,31 @@ const io = new Server(server) // Initialize Socket.IO with the server instance
 
 // Socket.IO connection
 io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id) // Log when a user connects
+
   socket.on('chat message', (msg) => {
-    io.emit('chat message', msg)
+    try {
+      // Validate the message text
+      if (!msg) {
+        throw new Error('Message cannot be empty')
+      }
+
+      console.log('Message received:', msg) // Log the received message
+      io.emit('chat message', msg) // Broadcast the message to all clients
+    } catch (error) {
+      console.error('Error handling chat message:', error.message)
+      socket.emit('error', { error: error.message }) // Notify the client with a specific error message
+    }
+  })
+
+  // Handle disconnection
+  socket.on('disconnect', (reason) => {
+    console.log(`User disconnected: ${socket.id}, Reason: ${reason}`)
+  })
+
+  // Handle errors on the socket
+  socket.on('error', (error) => {
+    console.error(`Socket error on ${socket.id}:`, error.message)
   })
 })
 
