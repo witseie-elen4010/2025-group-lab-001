@@ -11,6 +11,10 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
 })
 
+router.get('/wordShare', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'wordShare.html'))
+})
+
 router.get('/chatRoom', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'chatRoom.html'))
 })

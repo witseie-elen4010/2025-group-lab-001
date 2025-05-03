@@ -24,6 +24,11 @@ describe('Game Management', () => {
       const game2 = Game.createGame(2)
       expect(game2.host.getRole()).toBe('civilian')
     })
+
+    test('should assign word to player based on role', () => {
+      const game = Game.createGame(1)
+      expect(game.host.getWord()).toBe(game.wordPair.imposter)
+    })
   })
 
   describe('Game Counter Management', () => {

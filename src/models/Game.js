@@ -1,6 +1,7 @@
 'use strict'
 
 const Player = require('@models/Player')
+const Dictionary = require('@models/Dictionary')
 const { GAME_STATES } = require('@config/gameConstants')
 
 class Game {
@@ -11,6 +12,7 @@ class Game {
   constructor (hostId) {
     this.gameID = Game.#gameCounter++
     this.players = []
+    this.wordPair = Dictionary.getWordPair()
     this.host = this.#createPlayer(hostId)
     this.players.push(this.host)
     this.state = GAME_STATES.WAITING
@@ -20,7 +22,8 @@ class Game {
 
   #createPlayer (playerId) {
     const role = this.#assignRole()
-    return new Player(playerId, role)
+    const word = this.wordPair[role]
+    return new Player(playerId, role, word)
   }
 
   #assignRole () {

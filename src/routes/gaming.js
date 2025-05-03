@@ -36,6 +36,12 @@ gaming.get('/players', (req, res) => {
   res.json({ players: playerIDs })
 })
 
+gaming.get('/wordShare', (req, res) => {
+  const player = req.player
+  const word = player.getWord()
+  res.json({ word }) // Respond with the word as JSON
+})
+
 gaming.get('/playerID', (req, res) => {
   const player = req.player
   const playerID = player.getId()

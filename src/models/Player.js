@@ -3,10 +3,11 @@
 const { ROLES } = require('@config/gameConstants')
 
 class Player {
-  constructor (id, role = ROLES.CIVILIAN) {
+  constructor (id, role = ROLES.CIVILIAN, word = null) {
     this.id = id
     this.#validateRole(role)
     this.role = role
+    this.word = word
     this.active = true
     this.votesReceived = 0
     this.hasVoted = false
@@ -24,6 +25,10 @@ class Player {
 
   getRole () {
     return this.role
+  }
+
+  getWord () {
+    return this.word
   }
 
   assignRole (role) {
