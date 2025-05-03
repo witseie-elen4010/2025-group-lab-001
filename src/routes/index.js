@@ -68,8 +68,9 @@ router.get('/leaderboard/:gameID', (req, res) => {
 
   // Sort players by points in descending order
   const leaderboard = game.players.sort((a, b) => b.points - a.points)
+  const winner = game.getWinner()
 
-  res.render('leaderboard', { leaderboard }) // Assuming you're using a template engine like EJS or Pug
+  res.render('leaderboard', { leaderboard, winner })
 })
 
 router.post('/game/next-round', (req, res) => {

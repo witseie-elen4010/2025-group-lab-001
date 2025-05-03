@@ -57,7 +57,10 @@ const checkGameEnd = function (game) {
   let civilianCount = 0
 
   for (let i = 0; i < game.players.length(); i++) {
+    const player = game.players[i]
     if (game.players[i].isActive()) {
+      player.survived() // award points
+
       imposterCount += game.players[i].role === ROLES.IMPOSTER ? 1 : 0
       civilianCount += game.players[i].role === ROLES.CIVILIAN ? 1 : 0
     }
@@ -65,9 +68,22 @@ const checkGameEnd = function (game) {
   if (imposterCount === 0) {
     game.setState(GAME_STATES.FINISHED)
     game.winner = ROLES.CIVILIAN
+
+    // Award points to civilians for winning
+    game.players.forEach(player => {
+      if (player.role === ROLES.CIVILIAN) {
+        player.win()
+      }
+    })
   } else if (imposterCount === civilianCount) {
     game.setState(GAME_STATES.FINISHED)
     game.winner = ROLES.IMPOSTER
+
+    game.players.forEach(player => {
+      if (player.role === ROLES.IMPOSTER) {
+        player.win()
+      }
+    })
   } else {
     game.setState(GAME_STATES.SHARE_WORD)
   }

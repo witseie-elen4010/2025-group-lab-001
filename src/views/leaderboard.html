@@ -7,6 +7,10 @@
 </head>
 <body>
   <h1>Leaderboard</h1>
+
+  <!-- Display the winner -->
+  <h2>Winner: <%= winner ? winner.getId() : 'No winner yet' %></h2>
+
   <table>
     <thead>
       <tr>
@@ -16,7 +20,7 @@
       </tr>
     </thead>
     <tbody>
-      <% leaderboard.forEach((player, index) => { %>
+      <% leaderboard.sort((a, b) => b.points - a.points).forEach((player, index) => { %>
         <tr>
           <td><%= index + 1 %></td>
           <td><%= player.getId() %></td>
@@ -25,5 +29,8 @@
       <% }) %>
     </tbody>
   </table>
+
+  <!-- Button to redirect to the home page -->
+  <button onclick="window.location.href='/'">Return to Home</button>
 </body>
 </html>

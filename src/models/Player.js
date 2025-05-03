@@ -22,7 +22,7 @@ class Player {
   win () {
     this.points += 100
     // Give double points to Imposter
-    if (this.role === 'Imposter') {
+    if (this.role === ROLES.IMPOSTER) {
       this.points += 100
     }
   }
