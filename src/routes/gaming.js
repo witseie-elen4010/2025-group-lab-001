@@ -36,6 +36,12 @@ gaming.get('/players', (req, res) => {
   res.json({ players: playerIDs })
 })
 
+gaming.get('/playerID', (req, res) => {
+  const player = req.player
+  const playerID = player.getId()
+  res.json({ playerID })
+})
+
 gaming.get('/role', (req, res) => {
   const player = req.player
   res.json({ role: player.getRole() })

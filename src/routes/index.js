@@ -11,6 +11,10 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
 })
 
+router.get('/chatRoom', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'chatRoom.html'))
+})
+
 router.get('/create', (req, res) => {
   const currentPlayerID = playerCounter++
   const newGame = Game.createGame(currentPlayerID)
