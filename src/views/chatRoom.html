@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Chat Room</title>
+    <meta charset="utf-8" />
+    
+</head>
+
+<body>
+    <h1>Chat Room</h1>
+    
+    <form id = "form" action="" method="post">
+    <div>
+        
+        <input type="text" id="groupChat" name="groupChat" placeholder="Message participants" required />
+    </div>
+    <div class="button">
+        <button type="submit">Send</button>
+    </div>
+    <h2>Chat Log</h2>
+    <ul id="messages"></ul>
+</form>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/scripts/chatLog.js"></script>
+</body>
+
+</html>

@@ -42,6 +42,12 @@ gaming.get('/wordShare', (req, res) => {
   res.json({ word }) // Respond with the word as JSON
 })
 
+gaming.get('/playerID', (req, res) => {
+  const player = req.player
+  const playerID = player.getId()
+  res.json({ playerID })
+})
+
 gaming.get('/role', (req, res) => {
   const player = req.player
   res.json({ role: player.getRole() })
