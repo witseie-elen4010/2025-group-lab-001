@@ -11,12 +11,25 @@ class Player {
     this.active = true
     this.votesReceived = 0
     this.hasVoted = false
+    this.points = 0
   }
 
   #validateRole (role) {
     if (!Object.values(ROLES).includes(role)) {
       throw new Error('Invalid role type')
     }
+  }
+
+  win () {
+    this.points += 100
+    // Give double points to Imposter
+    if (this.role === ROLES.IMPOSTER) {
+      this.points += 100
+    }
+  }
+
+  survived () {
+    this.points += 10 * this.votesReceived // awarded per round, reward player for playing the risky game ;)
   }
 
   getId () {

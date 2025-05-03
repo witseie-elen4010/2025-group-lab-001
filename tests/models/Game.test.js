@@ -1,5 +1,6 @@
 /* eslint-env jest */
 const Game = require('@models/Game')
+const Player = require('@models/Player')
 
 describe('Game Management', () => {
   beforeEach(() => {
@@ -37,6 +38,32 @@ describe('Game Management', () => {
       const game2 = Game.createGame(2)
       expect(game1.gameID).toBe(0)
       expect(game2.gameID).toBe(1)
+    })
+    test('should mark the game as finished after the last round', () => {
+      const game = Game.createGame(1, 2) // Create a game with 2 rounds
+      game.players.push(new Player(2, 'civilian'))
+      game.players.push(new Player(3, 'civilian'))
+
+      game.startNewRound() // Round 2
+      game.startNewRound() // Exceeds total rounds
+
+      expect(game.currentRound).toBe(3) // Round counter increments
+      expect(game.isFinished).toBe(true) // Game should be marked as finished
+    })
+
+    test('should not reassign roles if the game is finished', () => {
+      const game = Game.createGame(1, 1) // Create a game with 1 round
+      game.players.push(new Player(2, 'civilian'))
+      game.players.push(new Player(3, 'civilian'))
+
+      game.startNewRound() // Round 2 (game finishes here)
+      const previousRoles = game.players.map(player => player.getRole())
+
+      game.startNewRound() // Attempt to start a new round after the game is finished
+      const currentRoles = game.players.map(player => player.getRole())
+
+      expect(game.isFinished).toBe(true) // Game should remain finished
+      expect(currentRoles).toEqual(previousRoles) // Roles should not change
     })
   })
 })
