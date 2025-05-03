@@ -3,11 +3,11 @@
 const { ROLES } = require('@config/gameConstants')
 
 class Player {
-  constructor (id, role = ROLES.CIVILIAN) {
+  constructor (id, role = ROLES.CIVILIAN, word = null) {
     this.id = id
     this.#validateRole(role)
     this.role = role
-    this.word = null
+    this.word = word
   }
 
   #validateRole (role) {
