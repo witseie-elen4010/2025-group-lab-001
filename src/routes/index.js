@@ -6,7 +6,6 @@ app.use(express.urlencoded({ extended: true }))
 
 const path = require('path')
 const Game = require('@models/Game')
-const Player = require('@models/Player')
 
 let playerCounter = 0
 const router = express.Router()
