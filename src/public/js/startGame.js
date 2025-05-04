@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!res.ok) {
           throw new Error(`Failed to start game: ${res.status}`)
         }
-        window.location.href = '/gaming/share-word'
+        window.location.href = '/gaming/wordShare'
       } else {
         const res = await fetch('/gaming/state')
         if (!res.ok) {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await res.json()
         if (data.state === 'share') {
-          window.location.href = '/gaming/share-word'
+          window.location.href = '/gaming/wordShare'
         } else {
           /* eslint-disable */
           alert('Waiting for host to start the game...')

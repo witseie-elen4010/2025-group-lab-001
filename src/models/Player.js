@@ -12,6 +12,19 @@ class Player {
     this.votesReceived = 0
     this.hasVoted = false
     this.points = 0
+    this.hasSharedWord = false
+  }
+
+  setSharedWord () {
+    this.hasSharedWord = true
+  }
+
+  disableHasSharedWord () {
+    this.hasSharedWord = false
+  }
+
+  hasSharedWord () {
+    return this.hasSharedWord
   }
 
   #validateRole (role) {
