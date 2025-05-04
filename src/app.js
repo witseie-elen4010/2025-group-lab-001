@@ -10,8 +10,6 @@ const io = new Server(server) // Initialize Socket.IO with the server instance
 
 // Socket.IO connection
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id) // Log when a user connects
-
   socket.on('chat message', (msg) => {
     try {
       // Validate the message text
@@ -19,7 +17,6 @@ io.on('connection', (socket) => {
         throw new Error('Message cannot be empty')
       }
 
-      console.log('Message received:', msg) // Log the received message
       io.emit('chat message', msg) // Broadcast the message to all clients
     } catch (error) {
       console.error('Error handling chat message:', error.message)

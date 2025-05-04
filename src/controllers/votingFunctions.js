@@ -46,7 +46,7 @@ const mostVotedPlayer = function (votingPlayers) {
       maxVoted.anotherPlayer = true
     }
   }
-  return maxVoted.anotherPlayer === true ? null : votedPlayer.getId()
+  return maxVoted.anotherPlayer === true ? null : votedPlayer
 }
 
 const checkGameEnd = function (game) {
@@ -75,6 +75,9 @@ const checkGameEnd = function (game) {
     })
   } else if (imposterCount === civilianCount) {
     game.setState(GAME_STATES.FINISHED)
+    if (game.currentRounds === game.totalRounds) {
+      game.finishGame()
+    }
     game.setWinner(ROLES.IMPOSTER)
 
     game.players.forEach(player => {

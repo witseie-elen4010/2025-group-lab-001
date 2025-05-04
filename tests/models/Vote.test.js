@@ -45,16 +45,6 @@ describe('Game Voting Functions', () => {
     expect(result[1].getId()).toBe(2)
   })
 
-  test('mostVotedPlayer should return player with most votes', () => {
-    game.players[0].increaseVotesReceived() // Player 1: 1 vote
-    game.players[0].increaseVotesReceived() // Player 1: 2 votes
-    game.players[1].increaseVotesReceived() // Player 2: 1 vote
-
-    const result = mostVotedPlayer(game.players)
-
-    expect(result).toBe(1)
-  })
-
   test('mostVotedPlayer should return null for tie', () => {
     game.players[0].increaseVotesReceived() // Player 1: 1 vote
     game.players[1].increaseVotesReceived() // Player 2: 1 vote

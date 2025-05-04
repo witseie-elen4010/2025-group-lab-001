@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const wordElement = document.getElementById('word')
 
   // Fetch the player's word from the server
-  fetch('/gaming/wordShare')
+  fetch('/gaming/getWord')
     .then((response) => {
       if (!response.ok) {
         throw new Error('Failed to fetch the word')

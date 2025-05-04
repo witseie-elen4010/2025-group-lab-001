@@ -28,11 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-// Save the chat log when the page is closed
-window.addEventListener('beforeunload', () => {
-  window.localStorage.setItem('chatLog', JSON.stringify(log))
-})
-
 form.addEventListener('submit', (e) => {
   e.preventDefault()
   if (input.value) {
