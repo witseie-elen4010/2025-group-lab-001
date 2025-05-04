@@ -22,7 +22,8 @@ describe('Player Class', () => {
   test('should throw error for invalid role', () => {
     expect(() => {
       // eslint-disable-next-line new-cap
-      const _invalidPlayer = new Player(1, 'invalid-role')
+      /* eslint-disable */
+      const _invalidPlayer = new Player(1, 'invalid-role') 
     }).toThrow('Invalid role type')
   })
 

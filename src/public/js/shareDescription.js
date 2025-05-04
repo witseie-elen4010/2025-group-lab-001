@@ -1,5 +1,5 @@
 'use strict'
-
+/* eslint-disable */
 const socket = io()
 
 const form = document.getElementById('form')

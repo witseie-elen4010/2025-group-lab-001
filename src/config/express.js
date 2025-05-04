@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser')
 const gaming = require('@routes/gaming')
 const indexRouter = require('@routes/index')
 
-function createApp() {
+function createApp () {
   const app = express()
 
   // Configure middleware

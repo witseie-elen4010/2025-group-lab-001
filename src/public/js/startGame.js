@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.state === 'share') {
           window.location.href = '/gaming/share-word'
         } else {
+          /* eslint-disable */
           alert('Waiting for host to start the game...')
         }
       }
