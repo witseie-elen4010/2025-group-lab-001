@@ -13,20 +13,26 @@ class Game {
     this.gameID = Game.#gameCounter++
     this.players = []
     this.wordPair = Dictionary.getWordPair()
-    this.host = this.#createPlayer(hostId)
-    this.players.push(this.host)
+    this.host = this.createPlayer(hostId)
     this.totalRounds = totalRounds // Total number of rounds for the game
     this.currentRound = 1
     this.isFinished = false
     this.state = GAME_STATES.WAITING
     this.numVotesOustanding = 0
     this.winner = null
+
+    this.wordLeft = this.players.length
   }
 
-  #createPlayer (playerId) {
+  createPlayer (playerId) {
     const role = this.#assignRole()
     const word = this.wordPair[role]
-    return new Player(playerId, role, word)
+    const newPlayer = new Player(playerId, role, word)
+    this.players.push(newPlayer)
+    if (!this.host) {
+      this.host = newPlayer
+    }
+    return newPlayer
   }
 
   #assignRole () {
@@ -52,12 +58,19 @@ class Game {
 
   // Resets the Game
   startNewRound () {
-    if (this.currentRound >= this.totalRounds) {
-      this.isFinished = true
+    if (this._isFinished) {
+      return // Don't increment round if game is finished
     }
+
+    if (this.currentRound >= this.totalRounds) {
+      this._isFinished = true
+      return
+    }
+
     this.currentRound += 1
     this.players.forEach(player => {
       player.role = this.#assignRole()
+      player.word = this.wordPair[player.role]
     })
   }
 
@@ -81,8 +94,16 @@ class Game {
     return Game.#activeGames
   }
 
-  static get isFinished () {
-    return this.isFinished
+  get isFinished () {
+    return this._isFinished
+  }
+
+  set isFinished (newValue) {
+    this._isFinished = newValue
+  }
+
+  finishGame () {
+    this.isFinished = true
   }
 
   static resetCounter () {
@@ -108,6 +129,13 @@ class Game {
 
   getWinner () {
     return this.winner
+  }
+
+  resetWordShare () {
+    this.wordLeft = this.players.length
+    this.players.forEach(player => {
+      player.hasSharedWord = false
+    })
   }
 }
 

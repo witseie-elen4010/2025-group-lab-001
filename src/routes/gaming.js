@@ -36,7 +36,7 @@ gaming.get('/players', (req, res) => {
   res.json({ players: playerIDs })
 })
 
-gaming.get('/wordShare', (req, res) => {
+gaming.get('/getWord', (req, res) => {
   const player = req.player
   const word = player.getWord()
   res.json({ word }) // Respond with the word as JSON
@@ -73,47 +73,106 @@ gaming.post('/start', (req, res) => {
 
 gaming.get('/share-word', (req, res) => {
   res.json({ hello: 'hello' })
-  gaming.get('/voting', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'views', 'vote.html'))
-  })
+})
+gaming.get('/voting', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'vote.html'))
+})
 
-  gaming.post('/voting', (req, res) => {
-    const player = req.player
-    const game = req.game
-    let vote = null
-    let votedPlayer = null
-
-    if (game.gamestates === GAME_STATES.VOTING) {
-      if (player.getHasVoted() === false && player.isActive()) {
-        vote = req.body.vote
-        if (vote !== null && vote !== undefined) {
-          votedPlayer = game.findPlayer(vote)
-          if (votedPlayer !== null && votedPlayer !== undefined) {
-            votedPlayer.increaseVotesReceived()
-            player.setHasVoted(true)
-            game.decreaseNumVotesOutstanding()
-          }
+gaming.post('/voting', (req, res) => {
+  const player = req.player
+  const game = req.game
+  let vote = null
+  let votedPlayer = null
+  if (game.getState() === GAME_STATES.VOTING) {
+    if (player.getHasVoted() === false && player.isActive()) {
+      vote = req.body.vote
+      if (vote !== null && vote !== undefined) {
+        votedPlayer = game.findPlayer(vote)
+        if (votedPlayer !== null && votedPlayer !== undefined) {
+          votedPlayer.increaseVotesReceived()
+          player.setHasVoted(true)
+          game.decreaseNumVotesOustsanding()
         }
       }
     }
-
-    const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
-    if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
-      votedOutPlayer.setActive(false)
+  }
+  const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+  if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
+    votedOutPlayer.setActive(false)
+  }
+  if (game.getNumVotesOutstanding() === 0) {
+    votingFunctions.checkGameEnd(game)
+    if (game.getState() !== GAME_STATES.VOTING) {
+      res.redirect('/gaming/next-round')
     }
-
-    if (game.getNumVotesOutstanding() === 0) {
-      votingFunctions.checkGameEnd(game)
-      // Multi-round mode features can be added here
-    } else {
+  } else {
+    if (game.getState() === GAME_STATES.VOTING) {
       res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
     }
-  })
+  }
+})
 
-  gaming.get('/finished', (req, res) => {
-    const game = req.game
-    res.sendFile(path.join(__dirname, '..', 'views', 'finished.html?winner=' + game.getWinner()))
-  })
+gaming.get('/waitingForVotes', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
+})
+
+gaming.get('/finished', (req, res) => {
+  const game = req.game
+  res.sendFile(path.join(__dirname, '..', 'views', 'finished.html?winner=' + game.getWinner()))
+})
+
+gaming.get('/wordShare', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'wordShare.html'))
+})
+
+gaming.get('/chatRoom', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'views', 'chatRoom.html'))
+})
+
+gaming.post('/share-word', (req, res) => {
+  if (!req.player.hasSharedword()) {
+    req.players.setHasSharedWord()
+  }
+  req.game.wordLeft -= 1
+  if (req.wordLeft === 0) {
+    res.send({ ongoing: 'false' })
+  }
+
+  res.send({ ongoing: 'true' })
+})
+
+gaming.get('/setUpVoting', (req, res) => {
+  votingFunctions.setUpVoting(req.game)
+  res.redirect('/gaming/voting')
+})
+
+gaming.get('/leaderboard/:gameID', (req, res) => {
+  const { gameID } = req.params
+  const game = Game.findGame(gameID)
+
+  if (!game) {
+    return res.status(404).send('Game not found')
+  }
+
+  res.sendFile(path.join(__dirname, '..', 'views', 'leaderboard.html'))
+})
+
+gaming.get('/next-round', (req, res) => {
+  const { gameID } = req.cookies
+  const game = Game.findGame(gameID)
+
+  if (!game) {
+    return res.status(404).send('Game not found')
+  }
+
+  game.startNewRound()
+
+  if (game.isFinished) {
+    // Redirect to the leaderboard if the game is finished
+    return res.redirect(`/gaming/leaderboard/${gameID}`)
+  }
+
+  res.redirect('/gaming/wordShare') // Redirect to the next round
 })
 
 module.exports = gaming
