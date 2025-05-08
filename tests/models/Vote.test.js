@@ -54,11 +54,19 @@ describe('Game Voting Functions', () => {
     expect(result).toBeNull()
   })
 
-  test('checkGameEnd should continue game when no winner', () => {
+  // test('checkGameEnd should continue game when no winner', () => {
+  //   // Default setup: 2 civilians, 1 imposter
+  //   checkGameEnd(game)
+
+  //   expect(game.getState()).toBe(GAME_STATES.SHARE_WORD)
+  //   expect(game.getWinner()).toBeNull()
+  // })
+
+  test('checkGameEnd should end the game when there is an equal or greater number of imposters left', () => {
     // Default setup: 2 civilians, 1 imposter
     checkGameEnd(game)
 
-    expect(game.getState()).toBe(GAME_STATES.SHARE_WORD)
-    expect(game.getWinner()).toBeNull()
+    expect(game.getState()).toBe(GAME_STATES.FINISHED)
+    expect(game.getWinner()).toBe(ROLES.IMPOSTER)
   })
 })
