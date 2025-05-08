@@ -19,6 +19,12 @@ function createApp () {
 
   app.use('/scripts', express.static(path.join(__dirname, '..', 'public', 'js')))
 
+  // The code commented below is for debugging purposes. It returns the request method and URL for each request made to the server.
+  // app.use((req, res, next) => {
+  //   console.log(req.method, req.url)
+  //   next()
+  // })
+
   // Configure routes
   app.use('/gaming', gaming)
   app.use('/', indexRouter)
@@ -32,14 +38,14 @@ function createApp () {
   // Global error handler
   app.use((err, req, res, next) => {
     // Log error details on server
-    console.error('Server Error:', {
-      timestamp: new Date().toISOString(),
-      error: err.message,
-      stack: err.stack,
-      url: req.url,
-      method: req.method,
-      statusCode: err.status || 500
-    })
+    // console.error('Server Error:', {
+    //   timestamp: new Date().toISOString(),
+    //   error: err.message,
+    //   stack: err.stack,
+    //   url: req.url,
+    //   method: req.method,
+    //   statusCode: err.status || 500
+    // })
 
     res.status(err.status || 500)
     res.sendFile(path.join(__dirname, '..', 'views', 'error.html'))
