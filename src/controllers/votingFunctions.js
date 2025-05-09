@@ -11,6 +11,7 @@ const setUpVoting = function (game) {
     game.players[i].deleteAllVotes()
     game.players[i].setHasVoted(false)
     numVotesOutstanding += game.players[i].isActive() ? 1 : 0
+    // console.log(game.players[i].getHasVoted())
   }
 
   game.setNumVotesOustanding(numVotesOutstanding)
@@ -50,6 +51,8 @@ const mostVotedPlayer = function (votingPlayers) {
 }
 
 const checkGameEnd = function (game) {
+  // console.log('Checking game end...')
+  // console.log(game.isFinished)
   let imposterCount = 0
   let civilianCount = 0
 
@@ -64,7 +67,11 @@ const checkGameEnd = function (game) {
   }
 
   if (imposterCount === 0) {
+    // console.log('Civilians win!')
     game.setState(GAME_STATES.FINISHED)
+    if (game.currentRounds === game.totalRounds) {
+      game.finishGame()
+    }
     game.setWinner(ROLES.CIVILIAN)
 
     // Award points to civilians for winning
@@ -73,7 +80,8 @@ const checkGameEnd = function (game) {
         player.win()
       }
     })
-  } else if (imposterCount === civilianCount) {
+  } else if (imposterCount >= civilianCount) {
+    // console.log('Imposter wins!')
     game.setState(GAME_STATES.FINISHED)
     if (game.currentRounds === game.totalRounds) {
       game.finishGame()
@@ -86,7 +94,9 @@ const checkGameEnd = function (game) {
       }
     })
   } else {
+    // console.log('Game continues...')
     game.setState(GAME_STATES.SHARE_WORD)
+    // console.log(game.isFinished)
   }
 }
 

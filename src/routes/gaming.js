@@ -96,18 +96,26 @@ gaming.post('/voting', (req, res) => {
       }
     }
   }
-  const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
-  if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
-    votedOutPlayer.setActive(false)
-  }
+  // console.log(game.getNumVotesOutstanding())
   if (game.getNumVotesOutstanding() === 0) {
+    const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+    if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
+      votedOutPlayer.setActive(false)
+    }
     votingFunctions.checkGameEnd(game)
-    if (game.getState() !== GAME_STATES.VOTING) {
+    if (game.getState() === GAME_STATES.SHARE_WORD) {
+      res.redirect('/gaming/wordShare')
+    } else if (game.getState() === GAME_STATES.FINISHED) {
       res.redirect('/gaming/next-round')
     }
   } else {
     if (game.getState() === GAME_STATES.VOTING) {
-      res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
+      // res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
+      if (player.getHasVoted() === false && player.isActive()) {
+        res.redirect('/gaming/voting')
+      } else {
+        res.redirect('/gaming/waitingForVotes')
+      }
     }
   }
 })
@@ -118,7 +126,11 @@ gaming.get('/waitingForVotes', (req, res) => {
 
 gaming.get('/finished', (req, res) => {
   const game = req.game
-  res.sendFile(path.join(__dirname, '..', 'views', 'finished.html?winner=' + game.getWinner()))
+  if (game.getState() === GAME_STATES.SHARE_WORD) {
+    res.redirect('/gaming/wordShare')
+  } else if (game.getState() === GAME_STATES.FINISHED) {
+    res.redirect('/gaming/next-round')
+  }
 })
 
 gaming.get('/wordShare', (req, res) => {
@@ -166,7 +178,7 @@ gaming.get('/next-round', (req, res) => {
   }
 
   game.startNewRound()
-
+  // console.log(game.isFinished)
   if (game.isFinished) {
     // Redirect to the leaderboard if the game is finished
     return res.redirect(`/gaming/leaderboard/${gameID}`)

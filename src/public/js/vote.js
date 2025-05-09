@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vote: playerIdInput.value.trim() })
     })
+    // console.log('Response:', response)
 
     if (response.ok) {
-      window.location.href = '/gaming/waitingForVotes'
+      window.location.href = response.url
     } else {
       errorDisplay.textContent = 'Vote failed. Please try again.'
     }
