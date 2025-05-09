@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser')
 
 // Import routes
 const gaming = require('@routes/gaming')
-const indexRouter = require('@routes/index')
+const home = require('@routes/home')
 
 function createApp () {
   const app = express()
@@ -27,7 +27,7 @@ function createApp () {
 
   // Configure routes
   app.use('/gaming', gaming)
-  app.use('/', indexRouter)
+  app.use('/', home)
 
   app.use((req, res, next) => {
     const error = new Error('Not Found')
