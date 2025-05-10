@@ -1,12 +1,13 @@
+/* eslint-disable */
 document.addEventListener('DOMContentLoaded', () => {
-  /* eslint-disable */
     const createAccountBtn = document.getElementById('create-account-btn')
     createAccountBtn.addEventListener('click', async () => {
         window.location.href = '/createAccount'
     })
-
+})
+document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('login-btn')
-    createAccountBtn.addEventListener('click', async () => {
+    loginBtn.addEventListener('click', async () => {
         window.location.href = '/login'
     })
 })
