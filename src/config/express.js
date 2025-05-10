@@ -4,7 +4,7 @@ const express = require('express')
 const path = require('path')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const { requestLoggerMiddleware } = require('../middleware/requestLogger')
+const { requestLoggerMiddleware } = require('@middleware/requestLogger')
 
 // Import routes
 const gaming = require('@routes/gaming')
