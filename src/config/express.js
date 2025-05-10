@@ -10,6 +10,7 @@ const { requestLoggerMiddleware } = require('@middleware/requestLogger')
 const gaming = require('@routes/gaming')
 const home = require('@routes/home')
 const admin = require('@routes/admin')
+const account = require('@routes/account')
 
 function createApp () {
   const app = express()
@@ -31,7 +32,9 @@ function createApp () {
   // Configure routes
   app.use('/admin', admin)
   app.use('/gaming', gaming)
-  app.use('/', home)
+  // app.use('/', home)
+  app.use('/home', home)
+  app.use('/', account)
 
   app.use((req, res, next) => {
     const error = new Error('Not Found')
