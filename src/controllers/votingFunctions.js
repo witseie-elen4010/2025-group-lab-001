@@ -66,26 +66,33 @@ const checkGameEnd = function (game) {
     }
   }
 
-  if (imposterCount === 0) {
-    // console.log('Civilians win!')
+  if (game.players.length === 0) {
+    game.finishGame()
     game.setState(GAME_STATES.FINISHED)
-    if (game.currentRounds === game.totalRounds) {
-      game.finishGame()
-    }
+    game.setWinner(ROLES.CIVILIAN)
+    console.log('Room Empty')
+  }
+
+  if (imposterCount === 0) {
+    console.log('Civilians win!')
+    game.setState(GAME_STATES.FINISHED)
+    // if (game.currentRounds === game.totalRounds) {
+    game.finishGame()
+    // }
     game.setWinner(ROLES.CIVILIAN)
 
     // Award points to civilians for winning
     game.players.forEach(player => {
       if (player.role === ROLES.CIVILIAN) {
-        player.win()
+        if (player.isActive()) {
+          player.win()
+        }
       }
     })
   } else if (imposterCount >= civilianCount) {
     // console.log('Imposter wins!')
     game.setState(GAME_STATES.FINISHED)
-    if (game.currentRounds === game.totalRounds) {
-      game.finishGame()
-    }
+    game.finishGame()
     game.setWinner(ROLES.IMPOSTER)
 
     game.players.forEach(player => {

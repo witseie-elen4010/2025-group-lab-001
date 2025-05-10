@@ -4,10 +4,11 @@ const Player = require('@models/Player')
 const Dictionary = require('@models/Dictionary')
 const { GAME_STATES } = require('@config/gameConstants')
 
+const gameRoles = ['civilian', 'imposter']
+
 class Game {
   static #gameCounter = 0
   static #activeGames = []
-  static gameRoles = ['civilian', 'imposter']
 
   constructor (hostId, totalRounds = 1) {
     this.gameID = Game.#gameCounter++
@@ -17,10 +18,11 @@ class Game {
     this.totalRounds = totalRounds // Total number of rounds for the game
     this.currentRound = 1
     this.isFinished = false
+    this.roundsComplete = false
     this.state = GAME_STATES.WAITING
     this.numVotesOustanding = 0
     this.winner = null
-
+    this.imposter = null
     this.wordLeft = this.players.length
   }
 
@@ -39,6 +41,16 @@ class Game {
     return Game.#activeGames.length === 0 ? 'imposter' : 'civilian'
   }
 
+  reassignRoles () {
+    if (this.imposter !== null) {
+      this.players[this.imposter].role = 'civilian'
+    }
+    const timestamp = Date.now()
+    this.imposter = timestamp % this.players.length
+    this.players[this.imposter].role = 'imposter'
+    this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
+  }
+
   getState () {
     return this.state
   }
@@ -52,24 +64,22 @@ class Game {
 
   static createGame (hostId) {
     const game = new Game(hostId)
+    game.reassignRoles()
     Game.#activeGames.push(game)
     return game
   }
 
   // Resets the Game
   startNewRound () {
-    if (this._isFinished) {
-      return // Don't increment round if game is finished
-    }
-
-    if (this.currentRound >= this.totalRounds) {
+    if (this.currentRound > this.totalRounds) {
       this._isFinished = true
+      this.roundsComplete = true
       return
     }
 
     this.currentRound += 1
     this.players.forEach(player => {
-      player.role = this.#assignRole()
+      player.setActive(true)
       player.word = this.wordPair[player.role]
     })
   }
