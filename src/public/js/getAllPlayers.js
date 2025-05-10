@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const gameId = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('gameID='))
+    ?.split('=')[1]
+
+  // Display game ID
+  document.getElementById('game-id').textContent = gameId
+
   const refreshBtn = document.getElementById('refresh-btn')
   const playerList = document.getElementById('player-list')
   const errorDisplay = document.createElement('div')
