@@ -11,7 +11,15 @@ class Account {
   }
 }
 
+const hashPassword = async function (password) {
+  const saltRounds = 10
+  return await bcrypt.hash(password, saltRounds)
+}
+
 const accounts = []
+const testPassword = '$2b$10$ynpM9dRFQBcgNjUovRYUeOavPTpBQFM9U2MK9L70VddynK5.duM2u'
+const newAccount = new Account('test@plasticflamingoes.org', 'testUser', testPassword)
+accounts.push(newAccount)
 
 const createAccount = async function (email, username, password, confirmPassword) {
   try {
@@ -65,9 +73,26 @@ const checkPasswordConfirmed = function (password, confirmPassword) {
   return password === confirmPassword
 }
 
-const hashPassword = async function (password) {
-  const saltRounds = 10
-  return await bcrypt.hash(password, saltRounds)
+const loginAccount = async function (email, password) {
+  let user
+  for (const account of accounts) {
+    if (account.email === email) {
+      user = account
+      break
+    }
+  }
+
+  //   console.log('User:', user)
+  if (!user) {
+    return new Error('Account not found')
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password)
+  if (!passwordMatch) {
+    return new Error('Incorrect password')
+  }
+  //   console.log('Login successful in af')
+  return user
 }
 
 module.exports = {
@@ -78,5 +103,7 @@ module.exports = {
   checkValidUsername,
   checkUsernameAvailable,
   checkPasswordConfirmed,
-  hashPassword
+  hashPassword,
+  loginAccount,
+  accounts
 }

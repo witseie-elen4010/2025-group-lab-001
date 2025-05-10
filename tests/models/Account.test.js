@@ -1,5 +1,6 @@
 /* eslint-env jest */
 const accountFunctions = require('@controllers/accountFunctions')
+const { accounts } = accountFunctions
 
 describe('Account Functions', () => {
   beforeEach(() => {
@@ -103,5 +104,47 @@ describe('Account Functions', () => {
 
     expect(hashed).not.toBe(rawPassword)
     expect(hashed.length).toBeGreaterThan(0)
+  })
+
+  describe('loginAccount function', () => {
+    const email = 'user@example.com'
+    const username = 'user1'
+    const password = 'securePass123'
+
+    beforeEach(async () => {
+      accounts.length = 0
+      await accountFunctions.createAccount(email, username, password, password)
+    })
+
+    test('should login successfully with correct email and password', async () => {
+      const result = await accountFunctions.loginAccount(email, password)
+      expect(result).toBeDefined()
+      expect(result).toHaveProperty('email', email)
+      expect(result).toHaveProperty('username', username)
+    })
+
+    test('should return error if email not found', async () => {
+      const result = await accountFunctions.loginAccount('notfound@example.com', password)
+      expect(result).toBeInstanceOf(Error)
+      expect(result.message).toBe('Account not found')
+    })
+
+    test('should return error if password is incorrect', async () => {
+      const result = await accountFunctions.loginAccount(email, 'wrongPassword')
+      expect(result).toBeInstanceOf(Error)
+      expect(result.message).toBe('Incorrect password')
+    })
+
+    test('should return error if email is empty', async () => {
+      const result = await accountFunctions.loginAccount('', password)
+      expect(result).toBeInstanceOf(Error)
+      expect(result.message).toBe('Account not found')
+    })
+
+    test('should return error if password is empty', async () => {
+      const result = await accountFunctions.loginAccount(email, '')
+      expect(result).toBeInstanceOf(Error)
+      expect(result.message).toBe('Incorrect password')
+    })
   })
 })
