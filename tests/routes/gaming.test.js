@@ -28,7 +28,7 @@ describe('Gaming Routes', () => {
 
     test('should serve error page with invalid player ID', async () => {
       // Create a game first
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const gameID = createResponse.headers['set-cookie']
         .find(cookie => cookie.startsWith('gameID='))
 
@@ -42,7 +42,7 @@ describe('Gaming Routes', () => {
 
   describe('Waiting Room', () => {
     test('should access waiting room with valid cookies', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
@@ -56,7 +56,7 @@ describe('Gaming Routes', () => {
 
   describe('Player List API', () => {
     test('should get player list for valid game', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
@@ -79,7 +79,7 @@ describe('Gaming Routes', () => {
 
   describe('Game State Management', () => {
     test('should allow host to start game', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
@@ -92,7 +92,7 @@ describe('Gaming Routes', () => {
 
     test('should deny non-host from starting game', async () => {
       // Create game first
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const gameID = createResponse.headers['set-cookie']
         .find(cookie => cookie.startsWith('gameID='))
 
@@ -105,7 +105,7 @@ describe('Gaming Routes', () => {
     })
 
     test('should return current game state', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
@@ -119,7 +119,7 @@ describe('Gaming Routes', () => {
 
   describe('Word Sharing API', () => {
     test('should get word for valid player', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
@@ -142,7 +142,7 @@ describe('Gaming Routes', () => {
 
   describe('Player ID API', () => {
     test('should get player ID for valid game', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const cookies = createResponse.headers['set-cookie']
 
       const response = await request(app)
