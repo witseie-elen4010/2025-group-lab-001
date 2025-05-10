@@ -3,10 +3,14 @@ require('module-alias/register')
 const createApp = require('@config/express')
 const { createServer } = require('node:http')
 const { Server } = require('socket.io')
+const { socketLoggerMiddleware } = require('@middleware/requestLogger')
 
 const app = createApp()
 const server = createServer(app)
-const io = new Server(server) // Initialize Socket.IO with the server instance
+const io = new Server(server)
+
+// Add socket middleware for logging
+io.use(socketLoggerMiddleware)
 
 // Socket.IO connection
 io.on('connection', (socket) => {
