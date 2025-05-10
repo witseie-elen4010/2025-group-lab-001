@@ -106,6 +106,7 @@ gaming.post('/voting', (req, res) => {
     if (game.getState() === GAME_STATES.SHARE_WORD) {
       res.redirect('/gaming/wordShare')
     } else if (game.getState() === GAME_STATES.FINISHED) {
+      // game.startNewRound()
       res.redirect('/gaming/next-round')
     }
   } else {
@@ -159,14 +160,22 @@ gaming.get('/setUpVoting', (req, res) => {
 })
 
 gaming.get('/leaderboard/:gameID', (req, res) => {
-  const { gameID } = req.params
-  const game = Game.findGame(gameID)
-
-  if (!game) {
-    return res.status(404).send('Game not found')
+  try {
+    const { gameID } = req.params
+    const game = Game.findGame(gameID)
+    if (!game) {
+      return res.status(404).send('Game not found')
+    }
+    const winner = game.getWinner()
+    const players = game.players || []
+    res.render('leaderboard', {
+      winner,
+      leaderboard: players
+    })
+  } catch (error) {
+    console.error('Error rendering leaderboard:', error)
+    res.status(500).send('Error displaying leaderboard: ' + error.message)
   }
-
-  res.sendFile(path.join(__dirname, '..', 'views', 'leaderboard.html'))
 })
 
 gaming.get('/next-round', (req, res) => {
@@ -180,11 +189,11 @@ gaming.get('/next-round', (req, res) => {
   game.startNewRound()
   // console.log(game.isFinished)
   if (game.isFinished) {
-    // Redirect to the leaderboard if the game is finished
+  // Redirect to the leaderboard if the game is finished
     return res.redirect(`/gaming/leaderboard/${gameID}`)
   }
 
-  res.redirect('/gaming/wordShare') // Redirect to the next round
+  return res.redirect('/gaming/share-word') // Redirect to the next round
 })
 
 module.exports = gaming

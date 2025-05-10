@@ -58,17 +58,14 @@ class Game {
 
   // Resets the Game
   startNewRound () {
-    if (this._isFinished) {
-      return // Don't increment round if game is finished
-    }
-
-    if (this.currentRound >= this.totalRounds) {
+    if (this.currentRound > this.totalRounds) {
       this._isFinished = true
       return
     }
 
     this.currentRound += 1
     this.players.forEach(player => {
+      // player.setActive(true)
       player.role = this.#assignRole()
       player.word = this.wordPair[player.role]
     })

@@ -12,6 +12,9 @@ const home = require('@routes/home')
 function createApp () {
   const app = express()
 
+  app.set('view engine', 'ejs')
+  app.set('views', path.join(__dirname, '..', 'views'))
+
   // Configure middleware
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
