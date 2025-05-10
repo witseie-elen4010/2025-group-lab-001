@@ -4,8 +4,6 @@ const Player = require('@models/Player')
 const Dictionary = require('@models/Dictionary')
 const { GAME_STATES } = require('@config/gameConstants')
 
-const gameRoles = ['civilian', 'imposter']
-
 class Game {
   static #gameCounter = 0
   static #activeGames = []
