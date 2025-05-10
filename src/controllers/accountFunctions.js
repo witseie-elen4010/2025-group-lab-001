@@ -70,6 +70,20 @@ const hashPassword = async function (password) {
   return await bcrypt.hash(password, saltRounds)
 }
 
+const loginAccount = async function (email, password) {
+  const user = accounts.find(acc => acc.email === email)
+  if (!user) {
+    return new Error('Account not found')
+  }
+
+  const passwordMatch = await bcrypt.compare(password, user.password)
+  if (!passwordMatch) {
+    return new Error('Incorrect password')
+  }
+
+  return user
+}
+
 module.exports = {
   createAccount,
   checkValidAccount,
@@ -78,5 +92,6 @@ module.exports = {
   checkValidUsername,
   checkUsernameAvailable,
   checkPasswordConfirmed,
-  hashPassword
+  hashPassword,
+  loginAccount
 }
