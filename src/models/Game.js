@@ -38,17 +38,17 @@ class Game {
   }
 
   #assignRole () {
-    return gameRoles[0]
+    return Game.#activeGames.length === 0 ? 'imposter' : 'civilian'
   }
 
   reassignRoles () {
     if (this.imposter !== null) {
       this.players[this.imposter].role = 'civilian'
     }
-
     const timestamp = Date.now()
     this.imposter = timestamp % this.players.length
     this.players[this.imposter].role = 'imposter'
+    this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
 
   getState () {
