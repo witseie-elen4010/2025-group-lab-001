@@ -1,13 +1,15 @@
-'use-strict'
+'use strict'
 
 const express = require('express')
 const path = require('path')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const { requestLoggerMiddleware } = require('../middleware/requestLogger')
 
 // Import routes
 const gaming = require('@routes/gaming')
 const home = require('@routes/home')
+const admin = require('@routes/admin')
 
 function createApp () {
   const app = express()
@@ -16,6 +18,7 @@ function createApp () {
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
   app.use(cookieParser())
+  app.use(requestLoggerMiddleware) // Add the logger middleware
 
   app.use('/scripts', express.static(path.join(__dirname, '..', 'public', 'js')))
 
@@ -26,6 +29,7 @@ function createApp () {
   // })
 
   // Configure routes
+  app.use('/admin', admin)
   app.use('/gaming', gaming)
   app.use('/', home)
 

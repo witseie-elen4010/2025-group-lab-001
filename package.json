@@ -54,7 +54,8 @@
     "@config": "src/config",
     "@views": "src/views",
     "@public": "src/public",
-    "@controllers": "src/controllers"
+    "@controllers": "src/controllers",
+    "@middleware": "src/middleware"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -83,7 +84,8 @@
       "^@config/(.*)$": "<rootDir>/src/config/$1",
       "^@views/(.*)$": "<rootDir>/src/views/$1",
       "^@public/(.*)$": "<rootDir>/src/public/$1",
-      "^@controllers/(.*)$": "<rootDir>/src/controllers/$1"
+      "^@controllers/(.*)$": "<rootDir>/src/controllers/$1",
+      "^@middleware/(.*)$": "<rootDir>/src/middleware/$1"
     },
     "testEnvironment": "node",
     "verbose": true

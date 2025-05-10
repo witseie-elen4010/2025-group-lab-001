@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Logs</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Request Logs</h1>
+    <button id="refresh">Refresh Logs</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Player ID</th>
+                <th>Method/Event</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody id="logs-table">
+        </tbody>
+    </table>
+    <script src="/scripts/admin.js"></script>
+</body>
+</html>
