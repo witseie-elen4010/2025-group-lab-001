@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard</title>
+</head>
+<body>
+  <h1>Leaderboard</h1>
+
+  <!-- Display the winner -->
+  <h2>Winner: 
+    <% if (typeof winner === 'string') { %>
+      <%= winner %>
+    <% } else if (winner && typeof winner.getId === 'function') { %>
+      <%= winner.getId() %>
+    <% } else { %>
+      No winner yet
+    <% } %>
+  </h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player ID</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% leaderboard
+            .sort((a, b) => b.points - a.points)
+            .forEach((player, index) => { %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= player.getId() %></td>
+        <td><%= player.points %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  </tbody>
+  </table>
+
+  <!-- Buttons for navigation -->
+  <div class="button-container">
+    <!-- Button to return home -->
+    <button onclick="window.location.href='/'">Return to Home</button>
+    
+    <% if (!roundsCompleted) { %>
+    <button onclick="window.location.href='/gaming/waiting'">Start Next Round</button>
+    <% } %>
+  </div>
+</body>
+</html>

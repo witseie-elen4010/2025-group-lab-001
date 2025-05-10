@@ -170,7 +170,8 @@ gaming.get('/leaderboard/:gameID', (req, res) => {
     const players = game.players || []
     res.render('leaderboard', {
       winner,
-      leaderboard: players
+      leaderboard: players,
+      roundsCompleted: game.roundsComplete
     })
   } catch (error) {
     console.error('Error rendering leaderboard:', error)
@@ -185,15 +186,15 @@ gaming.get('/next-round', (req, res) => {
   if (!game) {
     return res.status(404).send('Game not found')
   }
+  game.reassignRoles()
 
-  game.startNewRound()
   // console.log(game.isFinished)
   if (game.isFinished) {
   // Redirect to the leaderboard if the game is finished
+    game.startNewRound()
     return res.redirect(`/gaming/leaderboard/${gameID}`)
   }
-
-  return res.redirect('/gaming/share-word') // Redirect to the next round
+  return res.redirect('/gaming/waiting') // Redirect to the next round
 })
 
 module.exports = gaming
