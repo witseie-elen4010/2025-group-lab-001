@@ -49,6 +49,16 @@ class Game {
     this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
 
+  generateUniquePlayerID () {
+    let nextId = this.players.length
+    for (let i = 0; i < this.players.length; i++) {
+      if (this.players[i].getId() === nextId) {
+        nextId++
+      }
+    }
+    return nextId
+  }
+
   getState () {
     return this.state
   }

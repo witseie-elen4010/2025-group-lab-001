@@ -8,6 +8,11 @@ const { GAME_STATES } = require('@config/gameConstants')
 const gaming = express.Router()
 
 gaming.use((req, res, next) => {
+  // Invite link is a special little boi with special privileges
+  if (req.path === '/invite') {
+    return next()
+  }
+
   const gameID = Number(req.cookies.gameID)
   const playerID = Number(req.cookies.playerID)
   const selectedGame = Game.findGame(gameID)
@@ -28,6 +33,31 @@ gaming.use((req, res, next) => {
 
 gaming.get('/waiting', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'wait.html'))
+})
+
+// Only accessible through invite link generated in waiting room
+gaming.get('/invite', (req, res) => {
+  // Get gameID from query
+  const gameID = req.query.gameID ? Number(req.query.gameID) : null
+
+  if (gameID === null || isNaN(gameID)) {
+    return res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+  }
+
+  const game = Game.findGame(gameID)
+  if (game) {
+    // basically the join room code but with gameID known
+
+    const currentPlayerID = game.generateUniquePlayerID()
+    game.createPlayer(currentPlayerID)
+
+    res.cookie('playerID', currentPlayerID)
+    res.cookie('gameID', gameID)
+
+    res.redirect('/gaming/waiting')
+  } else {
+    res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+  }
 })
 
 gaming.get('/players', (req, res) => {
