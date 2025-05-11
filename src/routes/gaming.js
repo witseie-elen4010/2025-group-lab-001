@@ -30,6 +30,31 @@ gaming.get('/waiting', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'wait.html'))
 })
 
+// Only accessible through invite link generated in waiting room
+gaming.get('/invite', (req, res) => {
+  // Get gameID from query
+  const gameID = Number(req.query.gameID)
+
+  if (gameID) {
+    const game = Game.findGame(gameID)
+    // basically the join room code but with gameID known
+    if (game) {
+      let currentPlayerID = game.players.length
+      currentPlayerID++
+      game.createPlayer(currentPlayerID)
+
+      res.cookie('playerID', currentPlayerID)
+      res.cookie('gameID', gameID)
+
+      res.redirect('/gaming/waiting')
+    } else {
+      res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
+  } else {
+    res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+  }
+})
+
 gaming.get('/players', (req, res) => {
   const game = req.game
   const playerIDs = game.players.map(player => player.getId())

@@ -15,15 +15,37 @@ describe('Game Management', () => {
       expect(game.players.length).toBe(1)
     })
 
-    test('first player should be imposter', () => {
+    test('A game is created with an imposter player', () => {
       const game = Game.createGame(1)
       expect(game.host.getRole()).toBe('imposter')
     })
 
-    test('subsequent players should be civilians', () => {
-      Game.createGame(1) // First game with imposter
-      const game2 = Game.createGame(2)
-      expect(game2.host.getRole()).toBe('civilian')
+    test('there should be exactly one imposter in the game', () => {
+      const game = Game.createGame(1)
+
+      // Add more players
+      game.createPlayer(2)
+      game.createPlayer(3)
+
+      // Count imposters
+      const imposterCount = game.players.filter(player => player.getRole() === 'imposter').length
+
+      expect(imposterCount).toBe(1)
+    })
+
+    test('all other players should be civilians', () => {
+      const game = Game.createGame(1)
+
+      // Add more players
+      game.createPlayer(2)
+      game.createPlayer(3)
+
+      // All players who aren't imposters should be civilians
+      const nonImposters = game.players.filter(player => player.getRole() !== 'imposter')
+      const allCivilians = nonImposters.every(player => player.getRole() === 'civilian')
+
+      expect(allCivilians).toBe(true)
+      expect(nonImposters.length).toBe(game.players.length - 1)
     })
 
     test('should assign word to player based on role', () => {
@@ -43,7 +65,6 @@ describe('Game Management', () => {
     //
     //  expect(game.currentRound).toBe(3)
     //  expect(game.isFinished).toBe(true)
-    // })
 
     // test('should reset player roles when starting a new round', () => {
     //  const game = Game.createGame(1, 2)
