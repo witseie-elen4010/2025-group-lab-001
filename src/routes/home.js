@@ -27,6 +27,7 @@ module.exports = (io) => {
     res.cookie('playerID', currentPlayerID)
     res.cookie('gameID', newGame.gameID)
     res.cookie('hostID', currentPlayerID)
+    res.cookie('spectator', 'false')
     res.redirect('/gaming/waiting')
   })
 

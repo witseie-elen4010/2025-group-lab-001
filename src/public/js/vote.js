@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* eslint-disable */
 const socket = io()
 
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+  const [key, value] = cookie.trim().split('=')
+  acc[key] = value
+  return acc
+}, {})
+
+
+
   voteForm.addEventListener('submit', async (event) => {
     event.preventDefault()
     errorDisplay.textContent = '' // Clear previous errors
@@ -23,6 +31,11 @@ const socket = io()
       errorDisplay.textContent = 'Vote failed. Please try again.'
     }
   })
+
+
+if (cookies.spectator === 'true') {
+  window.location.href = '/gaming/waitingForVotes'
+}
 
   socket.on('start game', () => {
     window.location.href = '/gaming/wordShare'

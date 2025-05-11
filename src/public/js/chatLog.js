@@ -13,6 +13,7 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
 const form = document.getElementById('form')
 const input = document.getElementById('groupChat')
 const messages = document.getElementById('messages')
+const votingButton = document.getElementById('voting-btn')
 
 let log = []
 
@@ -34,6 +35,28 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     window.scrollTo(0, document.body.scrollHeight)
   }
+
+  if (cookies.spectator === 'true') {
+    // Add a heading for spectators
+    const spectatorHeading = document.createElement('h1')
+    spectatorHeading.textContent = 'Spectator'
+    document.body.prepend(spectatorHeading)
+
+    // Hide all buttons on the page
+    const buttons = document.querySelectorAll('button')
+    buttons.forEach((button) => {
+      button.style.display = 'none'
+    })
+
+    const inputs = document.querySelectorAll('input, textarea, select')
+    inputs.forEach((input) => {
+    input.disabled = true
+    })
+  }
+
+if(cookies.playerID !== cookies.hostID) {
+  votingButton.style.display = 'none'
+}
 })
 
 form.addEventListener('submit', (e) => {
@@ -58,12 +81,6 @@ socket.on('chat message', (msg) => {
   messages.appendChild(item)
   window.scrollTo(0, document.body.scrollHeight)
 })
-
-const votingButton = document.getElementById('voting-btn')
-
-if(cookies.playerID !== cookies.hostID) {
-  votingButton.style.display = 'none'
-}
 
 votingButton.addEventListener('click', () => {
     socket.emit('start voting')
