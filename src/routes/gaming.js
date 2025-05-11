@@ -46,6 +46,9 @@ gaming.get('/invite', (req, res) => {
 
   const game = Game.findGame(gameID)
   if (game) {
+    if (!game.canAddPlayer()) {
+      return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+    }
     // basically the join room code but with gameID known
 
     const currentPlayerID = game.generateUniquePlayerID()

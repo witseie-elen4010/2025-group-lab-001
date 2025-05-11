@@ -32,6 +32,26 @@
     </div>
 
     <script>
+          document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+            const errorContainer = document.createElement('div');
+            errorContainer.style.color = 'red';
+            errorContainer.style.marginBottom = '15px';
+            
+            if (error === 'game-full') {
+                errorContainer.textContent = 'Sorry, that game is already full. Please try another game.';
+            } else if (error === 'game-not-found') {
+                errorContainer.textContent = 'Game not found. Please check the game ID and try again.';
+            }
+            
+            const heading = document.querySelector('h1');
+            heading.insertAdjacentElement('afterend', errorContainer);
+        }
+    });
+
         document.getElementById('show-lobbies-btn').addEventListener('click', function() {
             const lobbyList = document.getElementById('lobby-list');
             const loadingMessage = document.getElementById('loading-message');
@@ -76,5 +96,7 @@
             window.location.href = `/gaming/invite?gameID=${gameId}`;
         }
     </script>
+
+
 </body>
 </html>

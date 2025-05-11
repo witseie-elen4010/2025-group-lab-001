@@ -80,6 +80,11 @@ home.get('/join-lobby', (req, res) => {
     return res.redirect('/join?error=game-not-found')
   }
 
+  // Checking if game is full
+  if (!game.canAddPlayer()) {
+    return res.redirect('/join?error=game-full')
+  }
+
   const playerID = game.generateUniquePlayerID()
   game.createPlayer(playerID)
 

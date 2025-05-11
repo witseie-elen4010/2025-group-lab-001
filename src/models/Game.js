@@ -26,7 +26,9 @@ class Game {
   }
 
   static getAllGames () {
-    return Game.#activeGames
+    return Game.#activeGames.filter(game =>
+      game.state === GAME_STATES.WAITING &&
+    game.players.length <= game.maxPlayers)
   }
 
   createPlayer (playerId) {
@@ -80,6 +82,10 @@ class Game {
     game.reassignRoles()
     Game.#activeGames.push(game)
     return game
+  }
+
+  canAddPlayer () {
+    return this.players.length < this.maxPlayers
   }
 
   // Resets the Game
