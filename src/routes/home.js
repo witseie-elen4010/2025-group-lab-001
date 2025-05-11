@@ -52,4 +52,41 @@ home.post('/join', (req, res) => {
   }
 })
 
+home.get('/open-lobbies', (req, res) => {
+  try {
+    const openGames = Game.getAllGames()
+    const lobbies = openGames.map(game => ({
+      id: game.gameID,
+      playerCount: game.players.length,
+      maxPlayers: game.maxPlayers
+    }))
+
+    res.json({ lobbies })
+  } catch (error) {
+    console.error('Error fetching open lobbies:', error)
+    res.status(500).json({ error: 'Failed to fetch lobbies' })
+  }
+})
+
+home.get('/join-lobby', (req, res) => {
+  const gameID = Number(req.query.gameID)
+
+  if (!gameID) {
+    return res.redirect('/join')
+  }
+
+  const game = Game.findGame(gameID)
+  if (!game) {
+    return res.redirect('/join?error=game-not-found')
+  }
+
+  const playerID = game.generateUniquePlayerID()
+  game.createPlayer(playerID)
+
+  res.cookie('gameID', gameID)
+  res.cookie('playerID', playerID)
+
+  res.redirect('/gaming/waiting')
+})
+
 module.exports = home

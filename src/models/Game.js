@@ -8,7 +8,7 @@ class Game {
   static #gameCounter = 0
   static #activeGames = []
 
-  constructor (hostId, totalRounds = 1) {
+  constructor (hostId, totalRounds = 1, maxPlayers = 5) {
     this.gameID = Game.#gameCounter++
     this.players = []
     this.wordPair = Dictionary.getWordPair()
@@ -22,6 +22,11 @@ class Game {
     this.winner = null
     this.imposter = null
     this.wordLeft = this.players.length
+    this.maxPlayers = 5
+  }
+
+  static getAllGames () {
+    return Game.#activeGames
   }
 
   createPlayer (playerId) {
