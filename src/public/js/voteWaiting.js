@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   /* eslint-disable */
+const socket = io()
+
+  /* eslint-disable */
     const refreshBtn = document.getElementById('refresh-btn')
     refreshBtn.addEventListener('click', async () => {
     try {
@@ -21,4 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Failed to load game state. Please try again.')
     }
     })
+
+    socket.on('start game', () => {
+        window.location.href = '/gaming/wordShare'
+      })
+    
+      socket.on('next round', () => {
+        window.location.href = '/gaming/next-round'
+      })
 })

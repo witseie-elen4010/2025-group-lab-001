@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerIdInput = document.getElementById('playerId')
   const errorDisplay = document.getElementById('errorDisplay')
 
+  /* eslint-disable */
+const socket = io()
+
   voteForm.addEventListener('submit', async (event) => {
     event.preventDefault()
     errorDisplay.textContent = '' // Clear previous errors
@@ -19,5 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       errorDisplay.textContent = 'Vote failed. Please try again.'
     }
+  })
+
+  socket.on('start game', () => {
+    window.location.href = '/gaming/wordShare'
+  })
+  
+  socket.on('next round', () => {
+    window.location.href = '/gaming/next-round'
   })
 })
