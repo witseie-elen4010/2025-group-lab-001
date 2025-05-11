@@ -4,8 +4,6 @@ const Player = require('@models/Player')
 const Dictionary = require('@models/Dictionary')
 const { GAME_STATES } = require('@config/gameConstants')
 
-const gameRoles = ['civilian', 'imposter']
-
 class Game {
   static #gameCounter = 0
   static #activeGames = []
@@ -38,17 +36,17 @@ class Game {
   }
 
   #assignRole () {
-    return gameRoles[0]
+    return Game.#activeGames.length === 0 ? 'imposter' : 'civilian'
   }
 
   reassignRoles () {
     if (this.imposter !== null) {
       this.players[this.imposter].role = 'civilian'
     }
-
     const timestamp = Date.now()
     this.imposter = timestamp % this.players.length
     this.players[this.imposter].role = 'imposter'
+    this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
 
   generateUniquePlayerID () {
