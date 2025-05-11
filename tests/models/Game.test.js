@@ -54,6 +54,37 @@ describe('Game Management', () => {
     })
   })
 
+  // Unique Player ID generation testing (necessary for the copy link functionality)
+  describe('Player ID Generation', () => {
+    test('generateUniquePlayerID returns sequential IDs when no conflicts', () => {
+      const game = Game.createGame(1) // First player has ID 1
+      expect(game.generateUniquePlayerID()).toBe(2)
+
+      game.createPlayer(2) // Add player with ID 2
+      expect(game.generateUniquePlayerID()).toBe(3) // Next should be 3
+    })
+
+    test('generateUniquePlayerID skips IDs that are already taken', () => {
+      const game = Game.createGame(5) // First player has ID 5
+      game.createPlayer(6) // Add another player with ID 6
+
+      // Next ID would be 2, but we'll manually add a player with ID 2 first
+      game.players.push(new Player(2))
+
+      // 3 players, so next ID should be 3
+      expect(game.generateUniquePlayerID()).toBe(3)
+    })
+
+    test('generateUniquePlayerID handles gaps in player IDs', () => {
+      const game = Game.createGame(1)
+      game.createPlayer(3)
+      game.createPlayer(5)
+
+      // Should return first available ID
+      expect(game.generateUniquePlayerID()).toBe(4)
+    })
+  })
+
   describe('Game Round Management', () => {
     // test('should mark the game as finished after the last round', () => {
     //  const game = Game.createGame(1, 2) // Create a game with 2 rounds

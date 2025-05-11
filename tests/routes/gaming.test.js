@@ -1,3 +1,5 @@
+'use strict'
+
 /* eslint-env jest */
 const request = require('supertest')
 const createApp = require('@config/express')
@@ -27,7 +29,6 @@ describe('Gaming Routes', () => {
     })
 
     test('should serve error page with invalid player ID', async () => {
-      // Create a game first
       const createResponse = await request(app).post('/create')
       const gameID = createResponse.headers['set-cookie']
         .find(cookie => cookie.startsWith('gameID='))
@@ -161,5 +162,30 @@ describe('Gaming Routes', () => {
       expect(response.status).toBe(403)
       expect(response.type).toBe('text/html')
     })
+  })
+
+  test('GET /gaming/invite should create player and redirect when given valid gameID', async () => {
+    const testgame = Game.createGame(1)
+    const gameID = testgame.gameID
+
+    const response = await request(app)
+      .get(`/gaming/invite?gameID=${gameID}`)
+      .expect(302)
+
+    expect(response.header.location).toBe('/gaming/waiting')
+    expect(response.header['set-cookie']).toBeTruthy()
+    // expect(testgame.players.length).toBe(2) // Original host + new player
+  })
+
+  test('GET /gaming/invite should return 404 for non-existent gameID', async () => {
+    await request(app)
+      .get('/gaming/invite?gameID=999') // Non-existent game ID
+      .expect(404)
+  })
+
+  test('GET /gaming/invite should return 400 when gameID is missing', async () => {
+    await request(app)
+      .get('/gaming/invite') // No gameID provided
+      .expect(400)
   })
 })
