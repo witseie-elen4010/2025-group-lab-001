@@ -39,8 +39,7 @@ gaming.get('/invite', (req, res) => {
     const game = Game.findGame(gameID)
     // basically the join room code but with gameID known
     if (game) {
-      let currentPlayerID = game.players.length
-      currentPlayerID++
+      const currentPlayerID = game.generateUniquePlayerID()
       game.createPlayer(currentPlayerID)
 
       res.cookie('playerID', currentPlayerID)
