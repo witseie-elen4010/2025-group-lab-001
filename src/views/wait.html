@@ -5,18 +5,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waiting Room</title>
+    <style>
+        #copy-status {
+            color: green;
+            margin-left: 10px;
+        }
+    </style>
 </head>
 
 <body>
-    <h3>Waiting for players to join</h3>
-    <p>Game ID: <span id="game-id"></span></p>
-    <button id="refresh-btn">Refresh</button>
-    <button id="start-game-btn">Start Game</button>
-    <ul id="player-list"></ul>
+    <h1>Waiting Room</h1>
+    <div class="game-info">
+        <h3>Waiting for players to join</h3>
+        <p><strong>Game ID:</strong> <span id="game-id">Loading...</span></p>
+    </div>
+    
+    <!-- Invite Link HERE -->
+    <div class="button-container">
+        <button id="copy-url-btn">Copy Invite Link</button>
+        <span id="copy-status" style="display: none;">Link copied!</span>
+    </div>
+    
+    <div class="button-container">
+        <button id="refresh-btn">Refresh Player List</button>
+        <button id="start-game-btn">Start Game</button>
+    </div>
+    
+    <h3>Players:</h3>
+    <ul id="player-list">
+        <li>Loading player list...</li>
+    </ul>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="/scripts/getAllPlayers.js"></script>
     <script src="/scripts/getRole.js"></script>
     <script src="/scripts/startGame.js"></script>
+    
+    <!-- Copy Link functionality HERE-->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gameID = getCookie('gameID');
+        document.getElementById('game-id').textContent = gameID || 'Not available';
+        
+        // copy button 
+        document.getElementById('copy-url-btn').addEventListener('click', function() {
+            const gameID = getCookie('gameID');
+            
+            if (!gameID) {
+                alert('Game ID not found in cookies');
+                return;
+            }
+            
+            // Generate invite URL with gameID 
+            const inviteUrl = `${window.location.origin}/gaming/invite?gameID=${gameID}`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(inviteUrl).then(function() {
+                const status = document.getElementById('copy-status');
+                status.style.display = 'inline';
+                
+                // Hide copy message after after 2 seconds
+                setTimeout(function() {
+                    status.style.display = 'none';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy. Please copy the URL manually.');
+            });
+        });
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+    });
+    </script>
 </body>
 
 </html>
