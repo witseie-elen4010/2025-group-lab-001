@@ -39,6 +39,9 @@ home.post('/join', (req, res) => {
   if (gameID) {
     const game = Game.findGame(gameID)
     if (game) {
+      if (!game.canAddPlayer()) {
+        return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+      }
       game.createPlayer(currentPlayerID)
 
       res.cookie('playerID', currentPlayerID)
@@ -70,19 +73,17 @@ home.get('/open-lobbies', (req, res) => {
 
 home.get('/join-lobby', (req, res) => {
   const gameID = Number(req.query.gameID)
-
+  // check valid gameID
   if (!gameID) {
     return res.redirect('/join')
   }
-
   const game = Game.findGame(gameID)
   if (!game) {
     return res.redirect('/join?error=game-not-found')
   }
-
   // Checking if game is full
   if (!game.canAddPlayer()) {
-    return res.redirect('/join?error=game-full')
+    return res.redirect(`/join?error=${encodeURIComponent('game-full')}`)
   }
 
   const playerID = game.generateUniquePlayerID()
