@@ -29,7 +29,7 @@ describe('Gaming Routes', () => {
     })
 
     test('should serve error page with invalid player ID', async () => {
-      const createResponse = await request(app).post('/create')
+      const createResponse = await request(app).post('/home/create')
       const gameID = createResponse.headers['set-cookie']
         .find(cookie => cookie.startsWith('gameID='))
 
