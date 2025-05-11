@@ -39,6 +39,9 @@ home.post('/join', (req, res) => {
   if (gameID) {
     const game = Game.findGame(gameID)
     if (game) {
+      if (!game.canAddPlayer()) {
+        return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+      }
       game.createPlayer(currentPlayerID)
 
       res.cookie('playerID', currentPlayerID)
@@ -50,6 +53,46 @@ home.post('/join', (req, res) => {
   } else {
     res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
   }
+})
+
+home.get('/open-lobbies', (req, res) => {
+  try {
+    const openGames = Game.getAllGames()
+    const lobbies = openGames.map(game => ({
+      id: game.gameID,
+      playerCount: game.players.length,
+      maxPlayers: game.maxPlayers
+    }))
+
+    res.json({ lobbies })
+  } catch (error) {
+    console.error('Error fetching open lobbies:', error)
+    res.status(500).json({ error: 'Failed to fetch lobbies' })
+  }
+})
+
+home.get('/join-lobby', (req, res) => {
+  const gameID = Number(req.query.gameID)
+  // check valid gameID
+  if (!gameID) {
+    return res.redirect('/join')
+  }
+  const game = Game.findGame(gameID)
+  if (!game) {
+    return res.redirect('/join?error=game-not-found')
+  }
+  // Checking if game is full
+  if (!game.canAddPlayer()) {
+    return res.redirect(`/join?error=${encodeURIComponent('game-full')}`)
+  }
+
+  const playerID = game.generateUniquePlayerID()
+  game.createPlayer(playerID)
+
+  res.cookie('gameID', gameID)
+  res.cookie('playerID', playerID)
+
+  res.redirect('/gaming/waiting')
 })
 
 module.exports = home

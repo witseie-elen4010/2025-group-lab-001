@@ -5,13 +5,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join</title>
+    <style>
+          .hidden {
+            display: none;
+        }
+    </style>
 </head>
 
+
 <body>
+<body>
+    <h1>Join Game</h1>
     <form action="/home/join" method="post">
         <input name="gameID" label="GameID" placeholder="Enter game ID">
         <button type="submit">Join</button>
     </form>
-</body>
+    
+    <div class="button-container">
+        <button id="show-lobbies-btn">Join Available Lobbies</button>
+    </div>
+    
+    <div id="lobby-list" class="hidden">
+        <h2>Available Games</h2>
+        <p id="loading-message">Loading lobbies...</p>
+        <div id="lobbies-container"></div>
+    </div>
 
+    <script>
+          document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+            const errorContainer = document.createElement('div');
+            errorContainer.style.color = 'red';
+            errorContainer.style.marginBottom = '15px';
+            
+            if (error === 'game-full') {
+                errorContainer.textContent = 'Sorry, that game is already full. Please try another game.';
+            } else if (error === 'game-not-found') {
+                errorContainer.textContent = 'Game not found. Please check the game ID and try again.';
+            }
+            
+            const heading = document.querySelector('h1');
+            heading.insertAdjacentElement('afterend', errorContainer);
+        }
+    });
+
+        document.getElementById('show-lobbies-btn').addEventListener('click', function() {
+            const lobbyList = document.getElementById('lobby-list');
+            const loadingMessage = document.getElementById('loading-message');
+            const lobbiesContainer = document.getElementById('lobbies-container');
+            
+            // hide available lobbies until clicking button
+            if (lobbyList.classList.contains('hidden')) {
+                lobbyList.classList.remove('hidden');
+                
+                fetch('/home/open-lobbies')
+                    .then(response => response.json())
+                    .then(data => {
+                        loadingMessage.style.display = 'none';
+                        lobbiesContainer.innerHTML = '';
+                        
+                        if (data.lobbies && data.lobbies.length > 0) {
+                            data.lobbies.forEach(lobby => {
+                                const lobbyItem = document.createElement('div');
+                                lobbyItem.className = 'lobby-item';
+                                lobbyItem.innerHTML = `
+                                    <p>Game ID: ${lobby.id}</p>
+                                    <p>Players: ${lobby.playerCount}/${lobby.maxPlayers}</p>
+                                    <button onclick="joinGame(${lobby.id})">Join</button>
+                                `;
+                                lobbiesContainer.appendChild(lobbyItem);
+                            });
+                        } else {
+                            lobbiesContainer.innerHTML = '<p>No open lobbies found. Why not create a new game?</p>';
+                        }
+                    })
+                    .catch(error => {
+                        loadingMessage.style.display = 'none';
+                        lobbiesContainer.innerHTML = '<p>Error loading lobbies. Please try again.</p>';
+                        console.error('Error fetching lobbies:', error);
+                    });
+            } else {
+                lobbyList.classList.add('hidden');
+            }
+        });
+        
+        function joinGame(gameId) {
+            window.location.href = `/gaming/invite?gameID=${gameId}`;
+        }
+    </script>
+
+
+</body>
 </html>
