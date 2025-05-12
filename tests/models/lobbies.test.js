@@ -104,15 +104,9 @@ describe('Home Routes - Join Page Functionality', () => {
   // Create a game with max 2 players
     const game = Game.createGame(1, 1, 2)
     game.maxPlayers = 2
-    const gameID = game.gameID
 
     // Add a second player to reach the limit
     game.createPlayer(2)
-
-    // Try to add a third player via the invite endpoint
-    // const response = await request(app)
-      // .get(`/gaming/invite?gameID=${gameID}`)
-      // .expect(403)
 
     // Check that player was not added
     expect(game.players.length).toBe(2)
