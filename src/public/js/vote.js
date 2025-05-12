@@ -3,6 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerIdInput = document.getElementById('playerId')
   const errorDisplay = document.getElementById('errorDisplay')
 
+  /* eslint-disable */
+const socket = io()
+
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+  const [key, value] = cookie.trim().split('=')
+  acc[key] = value
+  return acc
+}, {})
+
+
+
   voteForm.addEventListener('submit', async (event) => {
     event.preventDefault()
     errorDisplay.textContent = '' // Clear previous errors
@@ -18,6 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = response.url
     } else {
       errorDisplay.textContent = 'Vote failed. Please try again.'
+    }
+  })
+
+
+if (cookies.spectator === 'true') {
+  window.location.href = '/gaming/waitingForVotes'
+}
+
+  socket.on('start game', (gameID) => {
+    if (Number(gameID) === Number(cookies.gameID)) {
+      window.location.href = '/gaming/wordShare'
+    }
+  })
+  
+  socket.on('next round', (gameID) => {
+    if (Number(gameID) === Number(cookies.gameID)) {
+      window.location.href = '/gaming/next-round'
     }
   })
 })

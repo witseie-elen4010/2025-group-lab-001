@@ -5,229 +5,242 @@ const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 
-const gaming = express.Router()
+module.exports = (io) => {
+  const gaming = express.Router()
 
-gaming.use((req, res, next) => {
+  gaming.use((req, res, next) => {
   // Invite link is a special little boi with special privileges
-  if (req.path === '/invite') {
-    return next()
-  }
+    if (req.path === '/invite') {
+      return next()
+    }
 
-  const gameID = Number(req.cookies.gameID)
-  const playerID = Number(req.cookies.playerID)
-  const selectedGame = Game.findGame(gameID)
+    const gameID = Number(req.cookies.gameID)
+    const playerID = Number(req.cookies.playerID)
+    const selectedGame = Game.findGame(gameID)
 
-  if (selectedGame) {
-    const player = selectedGame.findPlayer(playerID)
-    if (player) {
-      req.game = selectedGame
-      req.player = player
-      next()
+    const spectator = req.cookies.spectator
+
+    if (selectedGame) {
+      const player = selectedGame.findPlayer(playerID)
+      if (player) {
+        req.game = selectedGame
+        req.player = player
+        next()
+      } else if (spectator === 'true') {
+        req.game = selectedGame
+        req.player = null
+        next()
+      } else {
+        res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+      }
     } else {
       res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
     }
-  } else {
-    res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-  }
-})
+  })
 
-gaming.get('/waiting', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'wait.html'))
-})
+  gaming.get('/waiting', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'wait.html'))
+  })
 
-// Only accessible through invite link generated in waiting room
-gaming.get('/invite', (req, res) => {
+  // Only accessible through invite link generated in waiting room
+  gaming.get('/invite', (req, res) => {
   // Get gameID from query
-  const gameID = req.query.gameID ? Number(req.query.gameID) : null
+    const gameID = req.query.gameID ? Number(req.query.gameID) : null
 
-  if (gameID === null || isNaN(gameID)) {
-    return res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-  }
-
-  const game = Game.findGame(gameID)
-  if (game) {
-    if (!game.canAddPlayer()) {
-      return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+    if (gameID === null || isNaN(gameID)) {
+      return res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
     }
-    // basically the join room code but with gameID known
 
-    const currentPlayerID = game.generateUniquePlayerID()
-    game.createPlayer(currentPlayerID)
+    const game = Game.findGame(gameID)
+    if (game) {
+      if (!game.canAddPlayer()) {
+        return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+      }
+      // basically the join room code but with gameID known
 
-    res.cookie('playerID', currentPlayerID)
-    res.cookie('gameID', gameID)
+      const currentPlayerID = game.generateUniquePlayerID()
+      game.createPlayer(currentPlayerID)
 
-    res.redirect('/gaming/waiting')
-  } else {
-    res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-  }
-})
+      res.cookie('playerID', currentPlayerID)
+      res.cookie('gameID', gameID)
+      res.cookie('spectator', 'false')
 
-gaming.get('/players', (req, res) => {
-  const game = req.game
-  const playerIDs = game.players.map(player => player.getId())
-  res.json({ players: playerIDs })
-})
+      res.redirect('/gaming/waiting')
+    } else {
+      res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
+  })
 
-gaming.get('/getWord', (req, res) => {
-  const player = req.player
-  const word = player.getWord()
-  res.json({ word }) // Respond with the word as JSON
-})
+  gaming.get('/players', (req, res) => {
+    const game = req.game
+    const playerIDs = game.players.map(player => player.getId())
+    res.json({ players: playerIDs })
+  })
 
-gaming.get('/playerID', (req, res) => {
-  const player = req.player
-  const playerID = player.getId()
-  res.json({ playerID })
-})
+  gaming.get('/getWord', (req, res) => {
+    const player = req.player
+    const word = player.getWord()
+    res.json({ word }) // Respond with the word as JSON
+  })
 
-gaming.get('/role', (req, res) => {
-  const player = req.player
-  res.json({ role: player.getRole() })
-})
+  gaming.get('/playerID', (req, res) => {
+    const player = req.player
+    const playerID = player.getId()
+    res.json({ playerID })
+  })
 
-gaming.get('/state', (req, res) => {
-  const game = req.game
-  res.json({ state: game.getState() })
-})
+  gaming.get('/role', (req, res) => {
+    const player = req.player
+    res.json({ role: player.getRole() })
+  })
 
-gaming.post('/start', (req, res) => {
-  const playerID = Number(req.cookies.playerID)
-  const hostID = Number(req.cookies.hostID)
+  gaming.get('/state', (req, res) => {
+    const game = req.game
+    res.json({ state: game.getState() })
+  })
 
-  if (playerID !== hostID) {
-    return res.status(403).send('Not authorized to start game')
-  }
+  gaming.post('/start', (req, res) => {
+    const playerID = Number(req.cookies.playerID)
+    const hostID = Number(req.cookies.hostID)
 
-  const game = req.game
-  game.setState(GAME_STATES.SHARE_WORD)
-  res.status(200).send('Game started')
-})
+    if (playerID !== hostID) {
+      return res.status(403).send('Not authorized to start game')
+    }
 
-gaming.get('/share-word', (req, res) => {
-  res.json({ hello: 'hello' })
-})
-gaming.get('/voting', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'vote.html'))
-})
+    const game = req.game
+    game.setState(GAME_STATES.SHARE_WORD)
+    res.status(200).send('Game started')
+  })
 
-gaming.post('/voting', (req, res) => {
-  const player = req.player
-  const game = req.game
-  let vote = null
-  let votedPlayer = null
-  if (game.getState() === GAME_STATES.VOTING) {
-    if (player.getHasVoted() === false && player.isActive()) {
-      vote = req.body.vote
-      if (vote !== null && vote !== undefined) {
-        votedPlayer = game.findPlayer(vote)
-        if (votedPlayer !== null && votedPlayer !== undefined) {
-          votedPlayer.increaseVotesReceived()
-          player.setHasVoted(true)
-          game.decreaseNumVotesOustsanding()
+  gaming.get('/share-word', (req, res) => {
+    res.json({ hello: 'hello' })
+  })
+  gaming.get('/voting', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'vote.html'))
+  })
+
+  gaming.post('/voting', (req, res) => {
+    const player = req.player
+    const game = req.game
+    let vote = null
+    let votedPlayer = null
+    if (game.getState() === GAME_STATES.VOTING) {
+      if (player.getHasVoted() === false && player.isActive()) {
+        vote = req.body.vote
+        if (vote !== null && vote !== undefined) {
+          votedPlayer = game.findPlayer(vote)
+          if (votedPlayer !== null && votedPlayer !== undefined) {
+            votedPlayer.increaseVotesReceived()
+            player.setHasVoted(true)
+            game.decreaseNumVotesOustsanding()
+          }
         }
       }
     }
-  }
-  // console.log(game.getNumVotesOutstanding())
-  if (game.getNumVotesOutstanding() === 0) {
-    const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
-    if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
-      votedOutPlayer.setActive(false)
+    // console.log(game.getNumVotesOutstanding())
+    if (game.getNumVotesOutstanding() === 0) {
+      const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+      if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
+        votedOutPlayer.setActive(false)
+      }
+      votingFunctions.checkGameEnd(game)
+      if (game.getState() === GAME_STATES.SHARE_WORD) {
+        console.log('Game started', game.gameID)
+        io.emit('start game', game.gameID)
+        // res.redirect('/gaming/wordShare')
+      } else if (game.getState() === GAME_STATES.FINISHED) {
+      // game.startNewRound()
+        console.log('Game finished', game.gameID)
+        io.emit('next round', game.gameID)
+        // res.redirect('/gaming/next-round')
+      }
+    } else {
+      if (game.getState() === GAME_STATES.VOTING) {
+      // res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
+        if (player.getHasVoted() === false && player.isActive()) {
+          res.redirect('/gaming/voting')
+        } else {
+          res.redirect('/gaming/waitingForVotes')
+        }
+      }
     }
-    votingFunctions.checkGameEnd(game)
+  })
+
+  gaming.get('/waitingForVotes', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
+  })
+
+  gaming.get('/finished', (req, res) => {
+    const game = req.game
     if (game.getState() === GAME_STATES.SHARE_WORD) {
       res.redirect('/gaming/wordShare')
     } else if (game.getState() === GAME_STATES.FINISHED) {
-      // game.startNewRound()
       res.redirect('/gaming/next-round')
     }
-  } else {
-    if (game.getState() === GAME_STATES.VOTING) {
-      // res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
-      if (player.getHasVoted() === false && player.isActive()) {
-        res.redirect('/gaming/voting')
-      } else {
-        res.redirect('/gaming/waitingForVotes')
-      }
+  })
+
+  gaming.get('/wordShare', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'wordShare.html'))
+  })
+
+  gaming.get('/chatRoom', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'chatRoom.html'))
+  })
+
+  gaming.post('/share-word', (req, res) => {
+    if (!req.player.hasSharedword()) {
+      req.players.setHasSharedWord()
     }
-  }
-})
+    req.game.wordLeft -= 1
+    if (req.wordLeft === 0) {
+      res.send({ ongoing: 'false' })
+    }
 
-gaming.get('/waitingForVotes', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
-})
+    res.send({ ongoing: 'true' })
+  })
 
-gaming.get('/finished', (req, res) => {
-  const game = req.game
-  if (game.getState() === GAME_STATES.SHARE_WORD) {
-    res.redirect('/gaming/wordShare')
-  } else if (game.getState() === GAME_STATES.FINISHED) {
-    res.redirect('/gaming/next-round')
-  }
-})
+  gaming.get('/setUpVoting', (req, res) => {
+    votingFunctions.setUpVoting(req.game)
+    res.redirect('/gaming/voting')
+  })
 
-gaming.get('/wordShare', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'wordShare.html'))
-})
+  gaming.get('/leaderboard/:gameID', (req, res) => {
+    try {
+      const { gameID } = req.params
+      const game = Game.findGame(gameID)
+      if (!game) {
+        return res.status(404).send('Game not found')
+      }
+      const winner = game.getWinner()
+      const players = game.players || []
+      res.render('leaderboard', {
+        winner,
+        leaderboard: players,
+        roundsCompleted: game.roundsComplete
+      })
+    } catch (error) {
+      console.error('Error rendering leaderboard:', error)
+      res.status(500).send('Error displaying leaderboard: ' + error.message)
+    }
+  })
 
-gaming.get('/chatRoom', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'views', 'chatRoom.html'))
-})
-
-gaming.post('/share-word', (req, res) => {
-  if (!req.player.hasSharedword()) {
-    req.players.setHasSharedWord()
-  }
-  req.game.wordLeft -= 1
-  if (req.wordLeft === 0) {
-    res.send({ ongoing: 'false' })
-  }
-
-  res.send({ ongoing: 'true' })
-})
-
-gaming.get('/setUpVoting', (req, res) => {
-  votingFunctions.setUpVoting(req.game)
-  res.redirect('/gaming/voting')
-})
-
-gaming.get('/leaderboard/:gameID', (req, res) => {
-  try {
-    const { gameID } = req.params
+  gaming.get('/next-round', (req, res) => {
+    const { gameID } = req.cookies
     const game = Game.findGame(gameID)
+
     if (!game) {
       return res.status(404).send('Game not found')
     }
-    const winner = game.getWinner()
-    const players = game.players || []
-    res.render('leaderboard', {
-      winner,
-      leaderboard: players,
-      roundsCompleted: game.roundsComplete
-    })
-  } catch (error) {
-    console.error('Error rendering leaderboard:', error)
-    res.status(500).send('Error displaying leaderboard: ' + error.message)
-  }
-})
+    game.reassignRoles()
 
-gaming.get('/next-round', (req, res) => {
-  const { gameID } = req.cookies
-  const game = Game.findGame(gameID)
+    // console.log(game.isFinished)
+    if (game.isFinished) {
+      // Redirect to the leaderboard if the game is finished
+      game.startNewRound()
+      return res.redirect(`/gaming/leaderboard/${gameID}`)
+    }
+    return res.redirect('/gaming/waiting') // Redirect to the next round
+  })
 
-  if (!game) {
-    return res.status(404).send('Game not found')
-  }
-  game.reassignRoles()
-
-  // console.log(game.isFinished)
-  if (game.isFinished) {
-  // Redirect to the leaderboard if the game is finished
-    game.startNewRound()
-    return res.redirect(`/gaming/leaderboard/${gameID}`)
-  }
-  return res.redirect('/gaming/waiting') // Redirect to the next round
-})
-
-module.exports = gaming
+  return gaming
+}

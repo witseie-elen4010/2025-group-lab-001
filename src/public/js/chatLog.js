@@ -3,9 +3,17 @@
 /* eslint-disable */
 const socket = io()
 
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+  const [key, value] = cookie.trim().split('=')
+  acc[key] = value
+  return acc
+}, {})
+
+
 const form = document.getElementById('form')
 const input = document.getElementById('groupChat')
 const messages = document.getElementById('messages')
+const votingButton = document.getElementById('voting-btn')
 
 let log = []
 
@@ -27,6 +35,28 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     window.scrollTo(0, document.body.scrollHeight)
   }
+
+  if (cookies.spectator === 'true') {
+    // Add a heading for spectators
+    const spectatorHeading = document.createElement('h1')
+    spectatorHeading.textContent = 'Spectator'
+    document.body.prepend(spectatorHeading)
+
+    // Hide all buttons on the page
+    const buttons = document.querySelectorAll('button')
+    buttons.forEach((button) => {
+      button.style.display = 'none'
+    })
+
+    const inputs = document.querySelectorAll('input, textarea, select')
+    inputs.forEach((input) => {
+    input.disabled = true
+    })
+  }
+
+if(cookies.playerID !== cookies.hostID) {
+  votingButton.style.display = 'none'
+}
 })
 
 form.addEventListener('submit', (e) => {
@@ -37,12 +67,13 @@ form.addEventListener('submit', (e) => {
       text: input.value,
       timestamp: new Date().toISOString()
     }
-    socket.emit('chat message', message)
+    socket.emit('chat message', message, cookies.gameID)
     input.value = ''
   }
 })
 
-socket.on('chat message', (msg) => {
+socket.on('chat message', (msg, gameID) => {
+  if(Number(gameID) === Number(cookies.gameID)) {
   const item = document.createElement('li')
   const timestamp = new Date(msg.timestamp).toLocaleTimeString()
   const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
@@ -50,4 +81,15 @@ socket.on('chat message', (msg) => {
   log.push(message)
   messages.appendChild(item)
   window.scrollTo(0, document.body.scrollHeight)
+  }
 })
+
+votingButton.addEventListener('click', () => {
+    socket.emit('start voting', cookies.gameID)
+  })
+
+  socket.on('start voting', (gameID) => {
+    if(Number(gameID) === Number(cookies.gameID)) {
+    window.location.href = '/gaming/setUpVoting'
+    }
+  })
