@@ -1,24 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
   /* eslint-disable */
-    const refreshBtn = document.getElementById('refresh-btn')
-    refreshBtn.addEventListener('click', async () => {
-    try {
-        const res = await fetch('/gaming/state')
-        if (!res.ok) {
-        throw new Error(`Failed to fetch game state: ${res.status}`)
-        }
-        const data = await res.json()
-        if (data.state === 'share') {
-        window.location.href = '/gaming/wordShare'
-        } else if (data.state === 'finished') {
-        window.location.href = '/gaming/finished'
-        } else {
-        alert('Voting is still in progress. Please wait for all players to finish.')
-        }
-    } 
-    catch (error) {
-        console.error('Error fetching game state:', error)
-        alert('Failed to load game state. Please try again.')
+const socket = io()
+
+const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=')
+    acc[key] = value
+    return acc
+  }, {})
+
+  socket.on('start game', (gameID) => {
+    if (Number(gameID) === Number(cookies.gameID)) {
+      window.location.href = '/gaming/wordShare'
     }
-    })
+  })
+  
+  socket.on('next round', (gameID) => {
+    if (Number(gameID) === Number(cookies.gameID)) {
+      window.location.href = '/gaming/next-round'
+    }
+  })
 })

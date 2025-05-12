@@ -8,7 +8,7 @@ class Game {
   static #gameCounter = 0
   static #activeGames = []
 
-  constructor (hostId, totalRounds = 1) {
+  constructor (hostId, totalRounds = 1, maxPlayers = 5) {
     this.gameID = Game.#gameCounter++
     this.players = []
     this.wordPair = Dictionary.getWordPair()
@@ -22,6 +22,13 @@ class Game {
     this.winner = null
     this.imposter = null
     this.wordLeft = this.players.length
+    this.maxPlayers = 5
+  }
+
+  static getAllGames () {
+    return Game.#activeGames.filter(game =>
+      game.state === GAME_STATES.WAITING &&
+    game.players.length <= game.maxPlayers)
   }
 
   createPlayer (playerId) {
@@ -49,6 +56,16 @@ class Game {
     this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
 
+  generateUniquePlayerID () {
+    let nextId = this.players.length
+    for (let i = 0; i < this.players.length; i++) {
+      if (this.players[i].getId() === nextId) {
+        nextId++
+      }
+    }
+    return nextId
+  }
+
   getState () {
     return this.state
   }
@@ -65,6 +82,10 @@ class Game {
     game.reassignRoles()
     Game.#activeGames.push(game)
     return game
+  }
+
+  canAddPlayer () {
+    return this.players.length < this.maxPlayers
   }
 
   // Resets the Game
