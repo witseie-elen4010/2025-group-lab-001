@@ -40,11 +40,13 @@ if (cookies.playerID !== cookies.hostID) {
 
 
 startButton.addEventListener('click', () => {
- socket.emit('start game')
+ socket.emit('start game', cookies.gameID)
 })
 
-socket.on('start game', () => {
-  window.location.href = '/gaming/wordShare'
+socket.on('start game', (gameID) => {
+  if (gameID === cookies.gameID) {
+    window.location.href = '/gaming/wordShare'
+  }
 })
 
 

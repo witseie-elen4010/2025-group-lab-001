@@ -67,12 +67,13 @@ form.addEventListener('submit', (e) => {
       text: input.value,
       timestamp: new Date().toISOString()
     }
-    socket.emit('chat message', message)
+    socket.emit('chat message', message, cookies.gameID)
     input.value = ''
   }
 })
 
-socket.on('chat message', (msg) => {
+socket.on('chat message', (msg, gameID) => {
+  if(gameID === cookies.gameID) {
   const item = document.createElement('li')
   const timestamp = new Date(msg.timestamp).toLocaleTimeString()
   const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
@@ -80,12 +81,15 @@ socket.on('chat message', (msg) => {
   log.push(message)
   messages.appendChild(item)
   window.scrollTo(0, document.body.scrollHeight)
+  }
 })
 
 votingButton.addEventListener('click', () => {
-    socket.emit('start voting')
+    socket.emit('start voting', cookies.gameID)
   })
 
-  socket.on('start voting', () => {
+  socket.on('start voting', (gameID) => {
+    if(gameID === cookies.gameID) {
     window.location.href = '/gaming/setUpVoting'
+    }
   })

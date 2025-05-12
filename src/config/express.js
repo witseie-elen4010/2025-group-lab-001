@@ -27,30 +27,30 @@ function createApp () {
 
   // Socket.IO connection
   io.on('connection', (socket) => {
-    socket.on('chat message', (msg) => {
+    socket.on('chat message', (msg, gameID) => {
       try {
       // Validate the message text
         if (!msg) {
           throw new Error('Message cannot be empty')
         }
 
-        io.emit('chat message', msg) // Broadcast the message to all clients
+        io.emit('chat message', msg, gameID) // Broadcast the message to all clients
       } catch (error) {
         console.error('Error handling chat message:', error.message)
         socket.emit('error', { error: error.message }) // Notify the client with a specific error message
       }
     })
 
-    socket.on('start game', () => {
-      io.emit('start game')
+    socket.on('start game', (gameID) => {
+      io.emit('start game', gameID)
     })
 
-    socket.on('start discussion', () => {
-      io.emit('start discussion')
+    socket.on('start discussion', (gameID) => {
+      io.emit('start discussion', gameID)
     })
 
-    socket.on('start voting', () => {
-      io.emit('start voting')
+    socket.on('start voting', (gameID) => {
+      io.emit('start voting', gameID)
     })
 
     // socket.on('next round', () => {

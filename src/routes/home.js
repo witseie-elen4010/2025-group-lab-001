@@ -44,6 +44,7 @@ module.exports = (io) => {
       const game = Game.findGame(gameID)
       if (spectate === 'true') {
         res.cookie('spectator', spectate)
+        res.cookie('gameID', gameID)
         res.redirect('/gaming/waiting')
       } else {
         if (game) {

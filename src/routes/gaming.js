@@ -144,11 +144,13 @@ module.exports = (io) => {
       }
       votingFunctions.checkGameEnd(game)
       if (game.getState() === GAME_STATES.SHARE_WORD) {
-        io.emit('start game')
+        console.log('Game started', game.gameID)
+        io.emit('start game', game.gameID)
         // res.redirect('/gaming/wordShare')
       } else if (game.getState() === GAME_STATES.FINISHED) {
       // game.startNewRound()
-        io.emit('next round')
+        console.log('Game finished', game.gameID)
+        io.emit('next round', game.gameID)
         // res.redirect('/gaming/next-round')
       }
     } else {

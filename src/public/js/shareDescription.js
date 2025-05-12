@@ -23,12 +23,13 @@ form.addEventListener('submit', (e) => {
       text: input.value,
       timestamp: new Date().toISOString()
     }
-    socket.emit('chat message', message)
+    socket.emit('chat message', message, cookies.gameID)
     input.value = ''
   }
 })
 
-socket.on('chat message', (msg) => {
+socket.on('chat message', (msg, gameID) => {
+  if (gameID === cookies.gameID) {
   const item = document.createElement('li')
   const timestamp = new Date(msg.timestamp).toLocaleTimeString()
   const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
@@ -36,6 +37,7 @@ socket.on('chat message', (msg) => {
   log.push(message)
   messages.appendChild(item)
   window.scrollTo(0, document.body.scrollHeight)
+  }
 })
 
 const discussButton = document.getElementById('discuss-btn')
@@ -65,9 +67,11 @@ if(cookies.playerID !== cookies.hostID) {
 })
 
 discussButton.addEventListener('click', () => {
-    socket.emit('start discussion')
+    socket.emit('start discussion', cookies.gameID)
   })
 
-  socket.on('start discussion', () => {
-    window.location.href = '/gaming/chatRoom'
+  socket.on('start discussion', (gameID) => {
+    if (gameID === cookies.gameID) {
+      window.location.href = '/gaming/chatRoom'
+    }
   })
