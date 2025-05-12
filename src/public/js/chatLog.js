@@ -73,7 +73,7 @@ form.addEventListener('submit', (e) => {
 })
 
 socket.on('chat message', (msg, gameID) => {
-  if(gameID === cookies.gameID) {
+  if(Number(gameID) === Number(cookies.gameID)) {
   const item = document.createElement('li')
   const timestamp = new Date(msg.timestamp).toLocaleTimeString()
   const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
@@ -89,7 +89,7 @@ votingButton.addEventListener('click', () => {
   })
 
   socket.on('start voting', (gameID) => {
-    if(gameID === cookies.gameID) {
+    if(Number(gameID) === Number(cookies.gameID)) {
     window.location.href = '/gaming/setUpVoting'
     }
   })

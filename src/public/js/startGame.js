@@ -44,7 +44,7 @@ startButton.addEventListener('click', () => {
 })
 
 socket.on('start game', (gameID) => {
-  if (gameID === cookies.gameID) {
+  if (Number(gameID) === Number(cookies.gameID)) {
     window.location.href = '/gaming/wordShare'
   }
 })
