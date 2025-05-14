@@ -8,20 +8,8 @@
 </head>
 
 <body>
-    <form id="create-game-form" action="/home/create" method="POST">
-        <h3>Select Number of Rounds:</h3>
-        <label>
-            <input type="radio" name="rounds" value="1" required> 1 Round
-        </label><br>
-        <label>
-            <input type="radio" name="rounds" value="3"> 3 Rounds
-        </label><br>
-        <label>
-            <input type="radio" name="rounds" value="5"> 5 Rounds
-        </label><br><br>
-        <button type="submit">Create Game</button>
-        <button type="button" onclick="window.location.href='/home/join'">Join Game</button>
-    </form>
+    <button type="button" onclick="window.location.href='/home/create'">Create Game</button>
+    <button type="button" onclick="window.location.href='/home/join'">Join Game</button>
 </body>
 
 </html>

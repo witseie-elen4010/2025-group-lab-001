@@ -12,6 +12,10 @@ module.exports = (io) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
   })
 
+  home.get('/create', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'createGame.html'))
+  })
+
   home.post('/create', (req, res) => {
     const currentPlayerID = playerCounter++
     const { rounds } = req.body
