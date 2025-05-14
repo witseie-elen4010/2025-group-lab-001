@@ -36,8 +36,8 @@ As an audience member, I want to be able to view a game even if I am not partici
 As a user, I want to be able to reset my password so that I can access my account even after forgetting my password.
 ### User stats and leaderboard
 As a user, I want to be able to view my stats as so that I can improve/look back on the games played before and see who's the best.
-### Navigation
-As a user, I want to be able to navigate through different sections on the website so that I can have visual clarity with regards to my current location on the site.
+### Enhanced Security for fair play
+As a player, I want the game to make it harder for others to cheat by modifying information stored on their devices, so that everyone has a fair and secure experience.
 ### Ghost/Goddess of Justice
 As a user, I want to have have the Ghost and The Godess of Justice roles so I can a greater effect on the voting outcome of the game by either participating in voting after being voted out (Ghost) or breaking a tie (Godess of Justice). 
 ### The Lovers/falafel vendor
