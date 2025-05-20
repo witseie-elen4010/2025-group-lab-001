@@ -19,13 +19,12 @@ account.post('/createAccount', async (req, res) => {
     const result = await accountFunctions.createAccount(email, username, password, confirmPassword)
     if (result instanceof Error) {
       console.error(result.message)
-
-      // Redirect back to the form with error message as a query param
       const qs = querystring.stringify({ error: result.message })
       return res.redirect(`/createAccount?${qs}`)
     } else {
       console.log('Account created successfully')
-      //   res.cookie('username', username)
+      const token = accountFunctions.generateToken(result.username, result.playerId)
+      res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
       return res.redirect('/home')
     }
   } catch (error) {
@@ -47,8 +46,8 @@ account.post('/login', async (req, res) => {
       const errorMsg = encodeURIComponent(loginResult.message)
       return res.redirect(`/login?error=${errorMsg}`)
     } else {
-    //   console.log('Login successful')
-      res.cookie('username', loginResult.username)
+      const token = accountFunctions.generateToken(loginResult.username, loginResult.playerId)
+      res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
       return res.redirect('/home')
     }
   } catch (error) {

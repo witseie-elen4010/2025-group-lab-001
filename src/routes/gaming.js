@@ -4,24 +4,27 @@ const path = require('path')
 const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
+const { verifyToken } = require('@middleware/auth')
 
 module.exports = (io) => {
   const gaming = express.Router()
 
+  // Apply JWT verification to all gaming routes except invite
   gaming.use((req, res, next) => {
-  // Invite link is a special little boi with special privileges
     if (req.path === '/invite') {
       return next()
     }
+    verifyToken(req, res, next)
+  })
 
+  gaming.use((req, res, next) => {
     const gameID = Number(req.cookies.gameID)
-    const playerID = Number(req.cookies.playerID)
     const selectedGame = Game.findGame(gameID)
 
     const spectator = req.cookies.spectator
 
     if (selectedGame) {
-      const player = selectedGame.findPlayer(playerID)
+      const player = selectedGame.findPlayer(req.user.playerId)
       if (player) {
         req.game = selectedGame
         req.player = player

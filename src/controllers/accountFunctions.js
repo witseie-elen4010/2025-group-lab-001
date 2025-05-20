@@ -2,12 +2,17 @@
 
 const bcrypt = require('bcrypt')
 const valid = require('validator')
+const jwt = require('jsonwebtoken')
+
+// JWT secret key - in production this should be in environment variables
+const JWT_SECRET = 'your-secret-key'
 
 class Account {
   constructor (email, username, password) {
     this.email = email
     this.username = username
     this.password = password
+    this.playerId = Math.floor(Math.random() * 1000000) // Generate a random player ID
   }
 }
 
@@ -20,6 +25,10 @@ const accounts = []
 const testPassword = '$2b$10$ynpM9dRFQBcgNjUovRYUeOavPTpBQFM9U2MK9L70VddynK5.duM2u'
 const newAccount = new Account('test@plasticflamingoes.org', 'testUser', testPassword)
 accounts.push(newAccount)
+
+const generateToken = (username, playerId) => {
+  return jwt.sign({ username, playerId }, JWT_SECRET, { expiresIn: '24h' })
+}
 
 const createAccount = async function (email, username, password, confirmPassword) {
   try {
@@ -105,5 +114,6 @@ module.exports = {
   checkPasswordConfirmed,
   hashPassword,
   loginAccount,
-  accounts
+  accounts,
+  generateToken
 }
