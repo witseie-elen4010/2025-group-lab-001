@@ -235,5 +235,8 @@ module.exports = {
   sendOTP,
   verifyOTP,
   resetPassword,
-  accounts
+  generateOTP,
+  deleteOldOTPs,
+  accounts,
+  otpAccounts
 }

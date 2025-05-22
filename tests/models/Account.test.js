@@ -1,5 +1,6 @@
 /* eslint-env jest */
 const accountFunctions = require('@controllers/accountFunctions')
+const { otpAccounts } = require('@controllers/accountFunctions')
 const { accounts } = accountFunctions
 
 describe('Account Functions', () => {
@@ -146,5 +147,127 @@ describe('Account Functions', () => {
       expect(result).toBeInstanceOf(Error)
       expect(result.message).toBe('Incorrect password')
     })
+  })
+})
+
+describe('Additional Account Utility Functions', () => {
+  beforeEach(() => {
+    accounts.length = 0
+  })
+
+  test('checkIfUser should confirm existence of user by email', async () => {
+    await accountFunctions.createAccount('exists@example.com', 'existsUser', 'Password123', 'Password123')
+    const result = await accountFunctions.checkIfUser('exists@example.com')
+    expect(result).toBe(true)
+  })
+
+  test('checkIfUser should return error for non-existing email', async () => {
+    const result = await accountFunctions.checkIfUser('nonexistent@example.com')
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Account not found')
+  })
+
+  test('getUsername should return correct username from email', async () => {
+    await accountFunctions.createAccount('user@example.com', 'userName', 'Password123', 'Password123')
+    const username = await accountFunctions.getUsername('user@example.com')
+    expect(username).toBe('userName')
+  })
+
+  test('getUsername should return error for unknown email', async () => {
+    const result = await accountFunctions.getUsername('nope@example.com')
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Account not found')
+  })
+
+  test('getEmail should return correct email from username', async () => {
+    await accountFunctions.createAccount('mail@example.com', 'mailuser', 'Password123', 'Password123')
+    const email = await accountFunctions.getEmail('mailuser')
+    expect(email).toBe('mail@example.com')
+  })
+
+  test('getEmail should return error for unknown username', async () => {
+    const result = await accountFunctions.getEmail('unknownuser')
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Account not found')
+  })
+})
+
+describe('OTP Functions', () => {
+  let otp, email, username
+
+  beforeEach(async () => {
+    accounts.length = 0
+    otpAccounts.length = 0
+    email = 'otpuser@example.com'
+    username = 'otpuser'
+    await accountFunctions.createAccount(email, username, 'Password123', 'Password123')
+  })
+
+  test('generateOTP should return a 4-digit string', async () => {
+    const otp = await accountFunctions.generateOTP()
+    expect(otp).toMatch(/^\d{4}$/)
+  })
+
+  test('sendOTP should send and store OTP for user', async () => {
+    otp = await accountFunctions.sendOTP(email)
+    expect(otp).toMatch(/^\d{4}$/)
+  })
+
+  test('verifyOTP should confirm valid OTP', async () => {
+    otp = await accountFunctions.sendOTP(email)
+    const result = await accountFunctions.verifyOTP(username, otp)
+    expect(result).toBe(true)
+  })
+
+  test('verifyOTP should fail for incorrect OTP', async () => {
+    await accountFunctions.sendOTP(email)
+    const result = await accountFunctions.verifyOTP(username, '0000')
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Invalid OTP')
+  }, 10000)
+
+  test('sendOTP should delete old OTPs if more than one exists', async () => {
+    otp = await accountFunctions.sendOTP(email)
+    const otp2 = await accountFunctions.sendOTP(email) // This should replace the previous
+    const result = await accountFunctions.verifyOTP(username, otp)
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Invalid OTP')
+    expect(otp2).not.toBe(otp)
+  }, 10000)
+})
+
+describe('Password Reset', () => {
+  const username = 'resetuser'
+  const email = 'reset@example.com'
+  const oldPassword = 'OldPass123'
+  const newPassword = 'NewPass123'
+
+  beforeEach(async () => {
+    accounts.length = 0
+    await accountFunctions.createAccount(email, username, oldPassword, oldPassword)
+  })
+
+  test('resetPassword should update the user password', async () => {
+    const result = await accountFunctions.resetPassword(username, newPassword, newPassword)
+    expect(result).toBe(true)
+
+    const loginOld = await accountFunctions.loginAccount(email, oldPassword)
+    expect(loginOld).toBeInstanceOf(Error)
+    expect(loginOld.message).toBe('Incorrect password')
+
+    const loginNew = await accountFunctions.loginAccount(email, newPassword)
+    expect(loginNew).toHaveProperty('username', username)
+  })
+
+  test('resetPassword should fail if passwords do not match', async () => {
+    const result = await accountFunctions.resetPassword(username, 'Pass1', 'Pass2')
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Passwords do not match')
+  })
+
+  test('resetPassword should fail if user does not exist', async () => {
+    const result = await accountFunctions.resetPassword('unknown', newPassword, newPassword)
+    expect(result).toBeInstanceOf(Error)
+    expect(result.message).toBe('Account not found')
   })
 })
