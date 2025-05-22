@@ -43,7 +43,7 @@ module.exports = (io) => {
 
   home.post('/joinGame', (req, res) => {
     const { gameID } = req.body
-
+    const { spectate } = req.body
     try {
       const game = Game.findGame(Number(gameID))
 
@@ -56,13 +56,14 @@ module.exports = (io) => {
       }
 
       const currentPlayerID = req.user.playerId
-      game.createPlayer(currentPlayerID)
-
+      if (!spectate) {
+        game.createPlayer(currentPlayerID)
+      }
       // Update JWT with game info
       const gameInfo = {
         gameId: gameID,
         isHost: false,
-        isSpectator: false
+        isSpectator: Boolean(spectate)
       }
       const newToken = accountFunctions.generateToken(req.user.username, currentPlayerID, gameInfo)
       res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })

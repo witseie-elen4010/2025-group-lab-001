@@ -48,6 +48,7 @@ socket.on('chat message', (msg, gameId) => {
 const discussButton = document.getElementById('discuss-btn')
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log(gameInfo)
   if (gameInfo?.isSpectator) {
     // Add a heading for spectators
     const spectatorHeading = document.createElement('h1')
