@@ -18,19 +18,20 @@ account.post('/createAccount', async (req, res) => {
   try {
     const result = await accountFunctions.createAccount(email, username, password, confirmPassword)
     if (result instanceof Error) {
-      console.error(result.message)
       const qs = querystring.stringify({ error: result.message })
-      return res.redirect(`/createAccount?${qs}`)
+      return res.redirect(`/account/createAccount?${qs}`)
     } else {
-      console.log('Account created successfully')
       const token = accountFunctions.generateToken(result.username, result.playerId)
-      res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      })
       return res.redirect('/home')
     }
   } catch (error) {
-    console.error('Error creating account:', error)
     const qs = querystring.stringify({ error: 'Internal server error' })
-    return res.redirect(`/createAccount?${qs}`)
+    return res.redirect(`/account/createAccount?${qs}`)
   }
 })
 
@@ -44,14 +45,17 @@ account.post('/login', async (req, res) => {
     const loginResult = await accountFunctions.loginAccount(email, password)
     if (loginResult instanceof Error) {
       const errorMsg = encodeURIComponent(loginResult.message)
-      return res.redirect(`/login?error=${errorMsg}`)
+      return res.redirect(`/account/login?error=${errorMsg}`)
     } else {
       const token = accountFunctions.generateToken(loginResult.username, loginResult.playerId)
-      res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+      })
       return res.redirect('/home')
     }
   } catch (error) {
-    console.error('Login error:', error)
     return res.status(500).send('Internal server error')
   }
 })

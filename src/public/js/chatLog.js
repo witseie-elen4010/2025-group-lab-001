@@ -9,6 +9,10 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
   return acc
 }, {})
 
+const token = cookies.token
+const payload = JSON.parse(atob(token.split('.')[1]))
+const playerID = payload.playerId
+const gameInfo = payload.gameInfo
 
 const form = document.getElementById('form')
 const input = document.getElementById('groupChat')
@@ -16,12 +20,6 @@ const messages = document.getElementById('messages')
 const votingButton = document.getElementById('voting-btn')
 
 let log = []
-
-// Get the player ID from a cookie or another source
-const playerID = document.cookie
-  .split('; ')
-  .find(row => row.startsWith('playerID='))
-  ?.split('=')[1]
 
 // Load the chat log when the page is loaded
 window.addEventListener('DOMContentLoaded', () => {
@@ -36,13 +34,11 @@ window.addEventListener('DOMContentLoaded', () => {
     window.scrollTo(0, document.body.scrollHeight)
   }
 
-  if (cookies.spectator === 'true') {
-    // Add a heading for spectators
+  if (gameInfo?.isSpectator === 'true') {
     const spectatorHeading = document.createElement('h1')
     spectatorHeading.textContent = 'Spectator'
     document.body.prepend(spectatorHeading)
 
-    // Hide all buttons on the page
     const buttons = document.querySelectorAll('button')
     buttons.forEach((button) => {
       button.style.display = 'none'
@@ -54,7 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
     })
   }
 
-if(cookies.playerID !== cookies.hostID) {
+if(gameInfo?.isHost === 'false') {
   votingButton.style.display = 'none'
 }
 })
@@ -67,13 +63,13 @@ form.addEventListener('submit', (e) => {
       text: input.value,
       timestamp: new Date().toISOString()
     }
-    socket.emit('chat message', message, cookies.gameID)
+    socket.emit('chat message', message, Number(gameInfo?.gameId))
     input.value = ''
   }
 })
 
 socket.on('chat message', (msg, gameID) => {
-  if(Number(gameID) === Number(cookies.gameID)) {
+  if(Number(gameID) === Number(gameInfo?.gameId)) {
   const item = document.createElement('li')
   const timestamp = new Date(msg.timestamp).toLocaleTimeString()
   const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
@@ -85,11 +81,11 @@ socket.on('chat message', (msg, gameID) => {
 })
 
 votingButton.addEventListener('click', () => {
-    socket.emit('start voting', cookies.gameID)
+    socket.emit('start voting', gameInfo?.gameId)
   })
 
   socket.on('start voting', (gameID) => {
-    if(Number(gameID) === Number(cookies.gameID)) {
+    if(Number(gameID) === Number(gameInfo?.gameId)) {
     window.location.href = '/gaming/setUpVoting'
     }
   })

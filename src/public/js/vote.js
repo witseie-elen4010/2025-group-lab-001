@@ -12,7 +12,9 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
   return acc
 }, {})
 
-
+const token = cookies.token
+const payload = JSON.parse(atob(token.split('.')[1]))
+const gameInfo = payload.gameInfo
 
   voteForm.addEventListener('submit', async (event) => {
     event.preventDefault()
@@ -33,18 +35,12 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
   })
 
 
-if (cookies.spectator === 'true') {
+if (gameInfo?.isSpectator === 'true') {
   window.location.href = '/gaming/waitingForVotes'
 }
-
-  socket.on('start game', (gameID) => {
-    if (Number(gameID) === Number(cookies.gameID)) {
-      window.location.href = '/gaming/wordShare'
-    }
-  })
   
   socket.on('next round', (gameID) => {
-    if (Number(gameID) === Number(cookies.gameID)) {
+    if (Number(gameID) === Number(gameInfo?.gameId)) {
       window.location.href = '/gaming/next-round'
     }
   })

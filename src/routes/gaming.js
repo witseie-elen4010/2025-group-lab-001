@@ -11,17 +11,12 @@ module.exports = (io) => {
 
   // Apply JWT verification to all gaming routes except invite
   gaming.use((req, res, next) => {
-    if (req.path === '/invite') {
-      return next()
-    }
     verifyToken(req, res, next)
   })
 
   gaming.use((req, res, next) => {
-    const gameID = Number(req.cookies.gameID)
+    const gameID = req.user.gameInfo?.gameId
     const selectedGame = Game.findGame(gameID)
-
-    const spectator = req.cookies.spectator
 
     if (selectedGame) {
       const player = selectedGame.findPlayer(req.user.playerId)
@@ -29,7 +24,7 @@ module.exports = (io) => {
         req.game = selectedGame
         req.player = player
         next()
-      } else if (spectator === 'true') {
+      } else if (req.user.gameInfo?.isSpectator) {
         req.game = selectedGame
         req.player = null
         next()
@@ -43,35 +38,6 @@ module.exports = (io) => {
 
   gaming.get('/waiting', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'wait.html'))
-  })
-
-  // Only accessible through invite link generated in waiting room
-  gaming.get('/invite', (req, res) => {
-  // Get gameID from query
-    const gameID = req.query.gameID ? Number(req.query.gameID) : null
-
-    if (gameID === null || isNaN(gameID)) {
-      return res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-    }
-
-    const game = Game.findGame(gameID)
-    if (game) {
-      if (!game.canAddPlayer()) {
-        return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
-      }
-      // basically the join room code but with gameID known
-
-      const currentPlayerID = game.generateUniquePlayerID()
-      game.createPlayer(currentPlayerID)
-
-      res.cookie('playerID', currentPlayerID)
-      res.cookie('gameID', gameID)
-      res.cookie('spectator', 'false')
-
-      res.redirect('/gaming/waiting')
-    } else {
-      res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-    }
   })
 
   gaming.get('/players', (req, res) => {
@@ -103,10 +69,8 @@ module.exports = (io) => {
   })
 
   gaming.post('/start', (req, res) => {
-    const playerID = Number(req.cookies.playerID)
-    const hostID = Number(req.cookies.hostID)
-
-    if (playerID !== hostID) {
+    const isHost = req.user.gameInfo?.isHost
+    if (!isHost) {
       return res.status(403).send('Not authorized to start game')
     }
 
@@ -140,7 +104,6 @@ module.exports = (io) => {
         }
       }
     }
-    // console.log(game.getNumVotesOutstanding())
     if (game.getNumVotesOutstanding() === 0) {
       const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
       if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
@@ -148,18 +111,12 @@ module.exports = (io) => {
       }
       votingFunctions.checkGameEnd(game)
       if (game.getState() === GAME_STATES.SHARE_WORD) {
-        console.log('Game started', game.gameID)
         io.emit('start game', game.gameID)
-        // res.redirect('/gaming/wordShare')
       } else if (game.getState() === GAME_STATES.FINISHED) {
-      // game.startNewRound()
-        console.log('Game finished', game.gameID)
         io.emit('next round', game.gameID)
-        // res.redirect('/gaming/next-round')
       }
     } else {
       if (game.getState() === GAME_STATES.VOTING) {
-      // res.sendFile(path.join(__dirname, '..', 'views', 'waitingForVotes.html'))
         if (player.getHasVoted() === false && player.isActive()) {
           res.redirect('/gaming/voting')
         } else {
@@ -222,13 +179,12 @@ module.exports = (io) => {
         roundsCompleted: game.roundsComplete
       })
     } catch (error) {
-      console.error('Error rendering leaderboard:', error)
       res.status(500).send('Error displaying leaderboard: ' + error.message)
     }
   })
 
   gaming.get('/next-round', (req, res) => {
-    const { gameID } = req.cookies
+    const gameID = req.user.gameInfo?.gameId
     const game = Game.findGame(gameID)
 
     if (!game) {
@@ -236,13 +192,11 @@ module.exports = (io) => {
     }
     game.reassignRoles()
 
-    // console.log(game.isFinished)
     if (game.isFinished) {
-      // Redirect to the leaderboard if the game is finished
       game.startNewRound()
       return res.redirect(`/gaming/leaderboard/${gameID}`)
     }
-    return res.redirect('/gaming/waiting') // Redirect to the next round
+    return res.redirect('/gaming/waiting')
   })
 
   return gaming

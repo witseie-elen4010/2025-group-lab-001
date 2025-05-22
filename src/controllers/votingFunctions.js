@@ -70,11 +70,11 @@ const checkGameEnd = function (game) {
     game.finishGame()
     game.setState(GAME_STATES.FINISHED)
     game.setWinner(ROLES.CIVILIAN)
-    console.log('Room Empty')
+    // console.log('Room Empty')
   }
 
   if (imposterCount === 0) {
-    console.log('Civilians win!')
+    // console.log('Civilians win!')
     game.setState(GAME_STATES.FINISHED)
     // if (game.currentRounds === game.totalRounds) {
     game.finishGame()

@@ -41,8 +41,8 @@ describe('Auth Middleware', () => {
     req.cookies.token = token
 
     verifyToken(req, res, mockNext)
-
-    expect(req.user).toEqual(testUser)
+    expect(req.user.username).toEqual(testUser.username)
+    expect(req.user.playerId).toEqual(testUser.playerId)
     expect(mockNext).toHaveBeenCalled()
     expect(res.status).not.toHaveBeenCalled()
     expect(res.redirect).not.toHaveBeenCalled()

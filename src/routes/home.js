@@ -2,11 +2,14 @@
 const path = require('path')
 const express = require('express')
 const Game = require('@models/Game')
+const { verifyToken } = require('@middleware/auth')
+const accountFunctions = require('@controllers/accountFunctions')
 
 module.exports = (io) => {
   const home = express.Router()
 
-  let playerCounter = 0
+  // Apply JWT verification to all home routes
+  home.use(verifyToken)
 
   home.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
@@ -16,60 +19,81 @@ module.exports = (io) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'createGame.html'))
   })
 
-  home.post('/create', (req, res) => {
-    const currentPlayerID = playerCounter++
-    const { rounds } = req.body
-    const totalRounds = parseInt(rounds, 10)
+  home.post('/createGame', (req, res) => {
+    const { totalRounds } = req.body
+    const currentPlayerID = req.user.playerId
 
-    // if (isNaN(totalRounds)) {
-    //  console.error('Invalid number of rounds selected')
-    //  return res.status(400).send('Invalid number of rounds selected')
-    // }
+    try {
+      const newGame = Game.createGame(currentPlayerID, totalRounds)
 
-    const newGame = Game.createGame(currentPlayerID, totalRounds)
-
-    res.cookie('playerID', currentPlayerID)
-    res.cookie('gameID', newGame.gameID)
-    res.cookie('hostID', currentPlayerID)
-    res.cookie('spectator', 'false')
-    res.redirect('/gaming/waiting')
-  })
-
-  io.emit('refresh players')
-
-  home.get('/join', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'views', 'join.html'))
-  })
-
-  home.post('/join', (req, res) => {
-    const { gameID, spectate } = req.body
-
-    if (gameID) {
-      const game = Game.findGame(gameID)
-      if (spectate === 'true') {
-        res.cookie('spectator', spectate)
-        res.cookie('gameID', gameID)
-        res.redirect('/gaming/waiting')
-      } else {
-        if (game) {
-          if (!game.canAddPlayer()) {
-            return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
-          }
-
-          const currentPlayerID = playerCounter++
-
-          game.createPlayer(currentPlayerID)
-
-          res.cookie('playerID', currentPlayerID)
-          res.cookie('gameID', gameID)
-          res.cookie('spectator', spectate)
-          res.redirect('/gaming/waiting')
-        } else {
-          res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
-        }
+      // Update JWT with game info
+      const gameInfo = {
+        gameId: newGame.gameID,
+        isHost: true,
+        isSpectator: false
       }
-    } else {
-      res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+      const newToken = accountFunctions.generateToken(req.user.username, currentPlayerID, gameInfo)
+      res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+
+      res.redirect('/gaming/waiting')
+    } catch (error) {
+      res.status(500).send('Error creating game')
+    }
+  })
+
+  home.post('/joinGame', (req, res) => {
+    const { gameID } = req.body
+
+    try {
+      const game = Game.findGame(Number(gameID))
+
+      if (!game) {
+        return res.status(404).send('Game not found')
+      }
+
+      if (!game.canAddPlayer()) {
+        return res.status(403).send('Game is full')
+      }
+
+      const currentPlayerID = req.user.playerId
+      game.createPlayer(currentPlayerID)
+
+      // Update JWT with game info
+      const gameInfo = {
+        gameId: gameID,
+        isHost: false,
+        isSpectator: false
+      }
+      const newToken = accountFunctions.generateToken(req.user.username, currentPlayerID, gameInfo)
+      res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+
+      res.redirect('/gaming/waiting')
+    } catch (error) {
+      res.status(500).send('Error joining game')
+    }
+  })
+
+  home.get('/spectate', (req, res) => {
+    const { gameID } = req.query
+
+    try {
+      const game = Game.findGame(Number(gameID))
+
+      if (!game) {
+        return res.status(404).send('Game not found')
+      }
+
+      const gameInfo = {
+        gameId: gameID,
+        isHost: false,
+        isSpectator: true
+      }
+      const newToken = accountFunctions.generateToken(req.user.username, req.user.playerId, gameInfo)
+      res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+
+      res.redirect('/gaming/waiting')
+    } catch (error) {
+      res.status(500).send('Error spectating game')
     }
   })
 
@@ -81,10 +105,8 @@ module.exports = (io) => {
         playerCount: game.players.length,
         maxPlayers: game.maxPlayers
       }))
-
       res.json({ lobbies })
     } catch (error) {
-      console.error('Error fetching open lobbies:', error)
       res.status(500).json({ error: 'Failed to fetch lobbies' })
     }
   })
@@ -111,6 +133,40 @@ module.exports = (io) => {
     res.cookie('playerID', playerID)
 
     res.redirect('/gaming/waiting')
+  })
+
+  io.emit('refresh players')
+
+  home.get('/join', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'join.html'))
+  })
+
+  home.get('/invite', (req, res) => {
+    const gameID = req.query.gameID
+
+    if (gameID === undefined || isNaN(gameID)) {
+      return res.status(400).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
+
+    const game = Game.findGame(gameID)
+    if (game) {
+      if (!game.canAddPlayer()) {
+        return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
+      }
+
+      game.createPlayer(req.user.playerId)
+
+      const gameInfo = {
+        gameId: gameID,
+        isHost: false,
+        isSpectator: false
+      }
+      const newToken = accountFunctions.generateToken(req.user.username, req.user.playerId, gameInfo)
+      res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
+      res.redirect('/gaming/waiting')
+    } else {
+      res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
   })
 
   return home

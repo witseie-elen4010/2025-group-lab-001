@@ -8,42 +8,47 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
   return acc
 }, {})
 
+// Get playerId and game info from JWT token
+const token = cookies.token
+const payload = JSON.parse(atob(token.split('.')[1]))
+const playerId = payload.playerId
+const gameInfo = payload.gameInfo
+
 const form = document.getElementById('form')
 const input = document.getElementById('wordDescription')
 const messages = document.getElementById('messages')
 
-const playerID = cookies.playerID; // Retrieve playerID from cookies
 let log = []
 
 form.addEventListener('submit', (e) => {
   e.preventDefault()
   if (input.value) {
     const message = {
-      playerID,
+      playerId,
       text: input.value,
       timestamp: new Date().toISOString()
     }
-    socket.emit('chat message', message, cookies.gameID)
+    socket.emit('chat message', message, gameInfo.gameId)
     input.value = ''
   }
 })
 
-socket.on('chat message', (msg, gameID) => {
-  if (Number(gameID) === Number(cookies.gameID)) {
-  const item = document.createElement('li')
-  const timestamp = new Date(msg.timestamp).toLocaleTimeString()
-  const message = `[${timestamp}] Player ${msg.playerID}: ${msg.text}`
-  item.textContent = message
-  log.push(message)
-  messages.appendChild(item)
-  window.scrollTo(0, document.body.scrollHeight)
+socket.on('chat message', (msg, gameId) => {
+  if (Number(gameId) === Number(gameInfo.gameId)) {
+    const item = document.createElement('li')
+    const timestamp = new Date(msg.timestamp).toLocaleTimeString()
+    const message = `[${timestamp}] Player ${msg.playerId}: ${msg.text}`
+    item.textContent = message
+    log.push(message)
+    messages.appendChild(item)
+    window.scrollTo(0, document.body.scrollHeight)
   }
 })
 
 const discussButton = document.getElementById('discuss-btn')
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (cookies.spectator === 'true') {
+  if (gameInfo?.isSpectator) {
     // Add a heading for spectators
     const spectatorHeading = document.createElement('h1')
     spectatorHeading.textContent = 'Spectator'
@@ -57,21 +62,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const inputs = document.querySelectorAll('input, textarea, select')
     inputs.forEach((input) => {
-    input.disabled = true
+      input.disabled = true
     })
   }
 
-if(cookies.playerID !== cookies.hostID) {
-  discussButton.style.display = 'none'
-}
+  if (!gameInfo?.isHost) {
+    discussButton.style.display = 'none'
+  }
 })
 
 discussButton.addEventListener('click', () => {
-    socket.emit('start discussion', cookies.gameID)
-  })
+  socket.emit('start discussion', gameInfo.gameId)
+})
 
-  socket.on('start discussion', (gameID) => {
-    if (Number(gameID) === Number(cookies.gameID)) {
-      window.location.href = '/gaming/chatRoom'
-    }
-  })
+socket.on('start discussion', (gameId) => {
+  if (Number(gameId) === Number(gameInfo.gameId)) {
+    window.location.href = '/gaming/chatRoom'
+  }
+})
