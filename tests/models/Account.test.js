@@ -1,13 +1,12 @@
 /* eslint-env jest */
 const accountFunctions = require('@controllers/accountFunctions')
 const { accounts } = accountFunctions
+const jwt = require('jsonwebtoken')
 
 describe('Account Functions', () => {
   beforeEach(() => {
     // Clear all accounts before each test
-    while (accountFunctions.createAccount.accounts && accountFunctions.createAccount.accounts.length > 0) {
-      accountFunctions.createAccount.accounts.pop()
-    }
+    accounts.length = 0
   })
 
   test('should create a valid account', async () => {
@@ -19,9 +18,13 @@ describe('Account Functions', () => {
     )
 
     expect(result).toBeInstanceOf(Object)
-    expect(result.email).toBe('test@example.com')
     expect(result.username).toBe('testuser')
-    expect(result.password).not.toBe('Password123') // Should be hashed
+    expect(result.playerId).toBeDefined()
+    // Verify the account was actually created in the accounts array
+    const createdAccount = accounts.find(acc => acc.username === 'testuser')
+    expect(createdAccount).toBeDefined()
+    expect(createdAccount.email).toBe('test@example.com')
+    expect(createdAccount.password).not.toBe('Password123') // Should be hashed
   })
 
   test('should reject invalid email', async () => {
@@ -145,6 +148,100 @@ describe('Account Functions', () => {
       const result = await accountFunctions.loginAccount(email, '')
       expect(result).toBeInstanceOf(Error)
       expect(result.message).toBe('Incorrect password')
+    })
+  })
+
+  describe('JWT Authentication', () => {
+    const testEmail = 'test@example.com'
+    const testUsername = 'testuser'
+    const testPassword = 'Password123'
+    let testAccount
+
+    beforeEach(async () => {
+      testAccount = await accountFunctions.createAccount(
+        testEmail,
+        testUsername,
+        testPassword,
+        testPassword
+      )
+    })
+
+    test('should generate valid JWT token with correct payload', () => {
+      const token = accountFunctions.generateToken(testAccount.username, testAccount.playerId)
+      const decoded = jwt.verify(token, 'your-secret-key')
+
+      expect(decoded).toHaveProperty('username', testAccount.username)
+      expect(decoded).toHaveProperty('playerId', testAccount.playerId)
+      expect(decoded).toHaveProperty('exp')
+      expect(decoded).not.toHaveProperty('password')
+      expect(decoded).not.toHaveProperty('email')
+    })
+
+    test('should generate different tokens for different users', () => {
+      const token1 = accountFunctions.generateToken('user1', 123)
+      const token2 = accountFunctions.generateToken('user2', 456)
+
+      expect(token1).not.toBe(token2)
+    })
+
+    test('should reject expired tokens', async () => {
+      const token = jwt.sign(
+        { username: testAccount.username, playerId: testAccount.playerId },
+        'your-secret-key',
+        { expiresIn: '1ms' }
+      )
+
+      // Wait for token to expire
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      expect(() => {
+        jwt.verify(token, 'your-secret-key')
+      }).toThrow('jwt expired')
+    })
+
+    test('should reject tokens with invalid signature', () => {
+      const token = accountFunctions.generateToken(testAccount.username, testAccount.playerId)
+
+      expect(() => {
+        jwt.verify(token, 'wrong-secret-key')
+      }).toThrow('invalid signature')
+    })
+
+    test('should reject tokens with modified payload', () => {
+      const token = accountFunctions.generateToken(testAccount.username, testAccount.playerId)
+      const [header, payload, signature] = token.split('.')
+      const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString())
+      decodedPayload.username = 'hacker'
+      const modifiedPayload = Buffer.from(JSON.stringify(decodedPayload)).toString('base64')
+      const modifiedToken = `${header}.${modifiedPayload}.${signature}`
+
+      expect(() => {
+        jwt.verify(modifiedToken, 'your-secret-key')
+      }).toThrow('invalid signature')
+    })
+
+    test('should generate unique playerId for each account', async () => {
+      const account1 = await accountFunctions.createAccount(
+        'user1@example.com',
+        'user1',
+        'Password123',
+        'Password123'
+      )
+      const account2 = await accountFunctions.createAccount(
+        'user2@example.com',
+        'user2',
+        'Password123',
+        'Password123'
+      )
+
+      expect(account1.playerId).toBeDefined()
+      expect(account2.playerId).toBeDefined()
+      expect(account1.playerId).not.toBe(account2.playerId)
+    })
+
+    test('should maintain consistent playerId across logins', async () => {
+      const loginResult = await accountFunctions.loginAccount(testEmail, testPassword)
+      expect(loginResult.playerId).toBe(testAccount.playerId)
     })
   })
 })

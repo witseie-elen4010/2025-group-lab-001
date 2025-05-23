@@ -5,19 +5,31 @@ const request = require('supertest')
 const createApp = require('@config/express')
 const Game = require('@models/Game')
 const { GAME_STATES } = require('@config/gameConstants')
+const accountFunctions = require('@controllers/accountFunctions')
 
 describe('Home Routes - Join Page Functionality', () => {
   let app
+  let token
 
-  beforeEach(() => {
+  beforeEach(async () => {
     app = createApp()
     Game.resetCounter()
+
+    // Create test account and get token
+    const account = await accountFunctions.createAccount(
+      'test@pf.org',
+      'testuser',
+      '123',
+      '123'
+    )
+    token = accountFunctions.generateToken(account.username, account.playerId)
   })
 
   describe('GET /home/open-lobbies', () => {
     test('should return empty array when no games exist', async () => {
       const response = await request(app)
         .get('/home/open-lobbies')
+        .set('Cookie', [`token=${token}`])
         .expect(200)
 
       expect(response.body).toHaveProperty('lobbies')
@@ -30,6 +42,7 @@ describe('Home Routes - Join Page Functionality', () => {
 
       const response = await request(app)
         .get('/home/open-lobbies')
+        .set('Cookie', [`token=${token}`])
         .expect(200)
 
       expect(response.body.lobbies.length).toBe(2)
@@ -46,6 +59,7 @@ describe('Home Routes - Join Page Functionality', () => {
 
       const response = await request(app)
         .get('/home/open-lobbies')
+        .set('Cookie', [`token=${token}`])
         .expect(200)
 
       expect(response.body.lobbies.length).toBe(1)
@@ -53,7 +67,7 @@ describe('Home Routes - Join Page Functionality', () => {
     })
   })
 
-  describe('GET /gaming/invite', () => {
+  describe('GET /home/invite', () => {
     test('should add player to existing game and redirect to waiting room', async () => {
       // Create a game
       const game = Game.createGame(1)
@@ -61,7 +75,8 @@ describe('Home Routes - Join Page Functionality', () => {
       const initialPlayerCount = game.players.length
 
       const response = await request(app)
-        .get(`/gaming/invite?gameID=${gameID}`)
+        .get(`/home/invite?gameID=${gameID}`)
+        .set('Cookie', [`token=${token}`])
         .expect(302) // Redirect
 
       expect(response.header.location).toBe('/gaming/waiting')
@@ -71,13 +86,15 @@ describe('Home Routes - Join Page Functionality', () => {
 
     test('should return 404 when game does not exist', async () => {
       await request(app)
-        .get('/gaming/invite?gameID=999')
+        .get('/home/invite?gameID=999')
+        .set('Cookie', [`token=${token}`])
         .expect(404)
     })
 
     test('should return 400 when gameID is missing', async () => {
       await request(app)
-        .get('/gaming/invite')
+        .get('/home/invite')
+        .set('Cookie', [`token=${token}`])
         .expect(400)
     })
   })
@@ -101,7 +118,7 @@ describe('Home Routes - Join Page Functionality', () => {
   })
 
   test('GET /gaming/invite should return 403 when game is full', async () => {
-  // Create a game with max 2 players
+    // Create a game with max 2 players
     const game = Game.createGame(1, 1, 2)
     game.maxPlayers = 2
 
@@ -113,22 +130,17 @@ describe('Home Routes - Join Page Functionality', () => {
   })
 
   test('GET /home/join-lobby should redirect with error when game is full', async () => {
-  // Create a game with max 2 players
+    // Create a game with max 2 players
     const game = Game.createGame(1, 1, 2)
     game.maxPlayers = 2
     const gameID = game.gameID
 
-    console.log('Initial player count:', game.players.length) // Should be 1
-    console.log('Max players:', game.maxPlayers) // Should be 2
-
     // Add a second player to reach the limit
     game.createPlayer(2)
 
-    console.log('Player count after adding:', game.players.length)
-    console.log('Can add player?', game.canAddPlayer())
-
     const response = await request(app)
       .get(`/home/join-lobby?gameID=${gameID}`)
+      .set('Cookie', [`token=${token}`])
       .expect(302)
 
     // Check the redirect includes the error

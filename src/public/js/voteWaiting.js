@@ -8,14 +8,19 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
     return acc
   }, {})
 
+  const token = cookies.token
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  const playerId = payload.playerId
+  const gameInfo = payload.gameInfo
+
   socket.on('start game', (gameID) => {
-    if (Number(gameID) === Number(cookies.gameID)) {
+    if (Number(gameID) === Number(gameInfo?.gameId)) {
       window.location.href = '/gaming/wordShare'
     }
   })
   
   socket.on('next round', (gameID) => {
-    if (Number(gameID) === Number(cookies.gameID)) {
+    if (Number(gameID) === Number(gameInfo?.gameId)) {
       window.location.href = '/gaming/next-round'
     }
   })

@@ -3,6 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
   roleDisplay.id = 'role-display'
   document.body.insertBefore(roleDisplay, document.body.firstChild)
 
+  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=')
+    acc[key] = value
+    return acc
+  }, {})
+
+  // Get playerId and game info from JWT token
+  const token = cookies.token
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  const gameInfo = payload.gameInfo
+  if (gameInfo?.isSpectator) {
+    return
+  }
+
   async function fetchRole () {
     try {
       const res = await fetch('/gaming/role')

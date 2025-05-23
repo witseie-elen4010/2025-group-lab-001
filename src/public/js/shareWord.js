@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=')
+    acc[key] = value
+    return acc
+  }, {})
+
+  // Get playerId and game info from JWT token
+  const token = cookies.token
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  const gameInfo = payload.gameInfo
+  if (gameInfo?.isSpectator) {
+    return
+  }
   const wordElement = document.getElementById('word')
 
   // Fetch the player's word from the server

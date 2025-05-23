@@ -39,25 +39,23 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/scripts/getAllPlayers.js"></script>
     <script src="/scripts/getRole.js"></script>
-    <script src="/scripts/startGame.js"></script>
+    <script src="/scripts/startGame.js" defer></script>
     
     <!-- Copy Link functionality HERE-->
-    <script>
+    <script defer>
     document.addEventListener('DOMContentLoaded', function() {
-        const gameID = getCookie('gameID');
-        document.getElementById('game-id').textContent = gameID || 'Not available';
-        
-        // copy button 
+        const gameID = getGameID()
+        document.getElementById('game-id').textContent = gameID;
+
         document.getElementById('copy-url-btn').addEventListener('click', function() {
-            const gameID = getCookie('gameID');
-            
-            if (!gameID) {
+            const gameID = getGameID()
+            if (gameID === undefined) { // Doing this check manually since I believe that 0 is falsey so when gameID === 0, !gameID doesnt work (edge case )
                 alert('Game ID not found in cookies');
                 return;
             }
             
             // Generate invite URL with gameID 
-            const inviteUrl = `${window.location.origin}/gaming/invite?gameID=${gameID}`;
+            const inviteUrl = `${window.location.origin}/home/invite?gameID=${gameID}`;
             
             // Copy to clipboard
             navigator.clipboard.writeText(inviteUrl).then(function() {
@@ -73,13 +71,20 @@
                 alert('Failed to copy. Please copy the URL manually.');
             });
         });
-        
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
+
+        function getGameID() {
+            const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+              const [key, value] = cookie.trim().split('=')
+              acc[key] = value
+              return acc
+            }, {})
+
+            const token = cookies.token
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            const ans =  payload.gameInfo?.gameId
+            if(ans !== undefined) return ans
         }
+        
     });
     </script>
 </body>

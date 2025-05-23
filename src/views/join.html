@@ -16,8 +16,8 @@
 <body>
 <body>
     <h1>Join Game</h1>
-    <form action="/home/join" method="post">
-        <input name="gameID" label="GameID" placeholder="Enter game ID">
+    <form action="/home/joinGame" method="post">
+        <input name="gameID" label="gameID" placeholder="Enter game ID">
         <button type="submit" name="spectate" value="false">Join</button>
         <button type="submit" name="spectate" value="true">Spectate</button>
     </form>
@@ -33,7 +33,7 @@
     </div>
 
     <script>
-          document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         const error = urlParams.get('error');
         
@@ -58,7 +58,6 @@
             const loadingMessage = document.getElementById('loading-message');
             const lobbiesContainer = document.getElementById('lobbies-container');
             
-            // hide available lobbies until clicking button
             if (lobbyList.classList.contains('hidden')) {
                 lobbyList.classList.remove('hidden');
                 
@@ -94,7 +93,7 @@
         });
         
         function joinGame(gameId) {
-            window.location.href = `/gaming/invite?gameID=${gameId}`;
+            window.location.href = `/home/invite?gameID=${gameId}`;
         }
     </script>
 

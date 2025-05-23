@@ -1,4 +1,5 @@
 'use strict'
+require('dotenv').config()
 require('module-alias/register')
 const createApp = require('@config/express')
 

@@ -2,12 +2,19 @@
 
 const bcrypt = require('bcrypt')
 const valid = require('validator')
+const jwt = require('jsonwebtoken')
+
+// JWT secret key from environment variable with fallback for development
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+
+let playerIdCounter = 1 // Counter for generating unique player IDs
 
 class Account {
   constructor (email, username, password) {
     this.email = email
     this.username = username
     this.password = password
+    this.playerId = playerIdCounter++ // Increment counter for each new account
   }
 }
 
@@ -17,18 +24,37 @@ const hashPassword = async function (password) {
 }
 
 const accounts = []
-const testPassword = '$2b$10$ynpM9dRFQBcgNjUovRYUeOavPTpBQFM9U2MK9L70VddynK5.duM2u'
-const newAccount = new Account('test@plasticflamingoes.org', 'testUser', testPassword)
+const testPassword = '123'
+const newAccount = new Account('test@pf.org', 'testUser', bcrypt.hashSync(testPassword, 10))
 accounts.push(newAccount)
+
+const generateToken = (username, playerId, gameInfo = null) => {
+  const payload = {
+    username,
+    playerId,
+    ...(gameInfo && { gameInfo })
+  }
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
+  return token
+}
+
+const checkValidUser = async function (username, playerId) {
+  return accounts.some(account => account.username === username && account.playerId === playerId)
+}
 
 const createAccount = async function (email, username, password, confirmPassword) {
   try {
     await checkValidAccount(email, username, password, confirmPassword)
+
     const hashedPassword = await hashPassword(password)
     const newAccount = new Account(email, username, hashedPassword)
-    // Here you would typically save the account to a database
     accounts.push(newAccount)
-    return newAccount
+
+    const result = {
+      username: newAccount.username,
+      playerId: newAccount.playerId
+    }
+    return result
   } catch (err) {
     return err
   }
@@ -82,7 +108,6 @@ const loginAccount = async function (email, password) {
     }
   }
 
-  //   console.log('User:', user)
   if (!user) {
     return new Error('Account not found')
   }
@@ -91,7 +116,7 @@ const loginAccount = async function (email, password) {
   if (!passwordMatch) {
     return new Error('Incorrect password')
   }
-  //   console.log('Login successful in af')
+
   return user
 }
 
@@ -105,5 +130,7 @@ module.exports = {
   checkPasswordConfirmed,
   hashPassword,
   loginAccount,
-  accounts
+  accounts,
+  generateToken,
+  checkValidUser
 }
