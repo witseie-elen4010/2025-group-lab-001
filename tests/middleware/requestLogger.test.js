@@ -13,6 +13,13 @@ describe('requestLoggerMiddleware', () => {
     resetLogs()
     res = {}
     next = jest.fn()
+    // Mock Date.toISOString to return a consistent timestamp
+    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-03-14T12:00:00.000Z')
+  })
+
+  afterEach(() => {
+    // Restore the original Date.toISOString
+    jest.restoreAllMocks()
   })
 
   test('logs start game action', () => {
@@ -22,7 +29,8 @@ describe('requestLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: 5,
       action: 'start game',
-      details: 'Started game with ID: 1'
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 
@@ -51,7 +59,8 @@ describe('requestLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: 5,
       action: 'cast vote',
-      details: 'Voted for player: player1'
+      details: 'Voted for player: player1',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 
@@ -62,7 +71,8 @@ describe('requestLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: 3,
       action: 'join game',
-      details: 'Joined game with ID: unknown'
+      details: 'Joined game with ID: unknown',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 
@@ -70,7 +80,12 @@ describe('requestLoggerMiddleware', () => {
     req = { url: '/gaming/start', body: { gameID: 1 }, cookies: { gameID: 1 } }
     requestLoggerMiddleware(req, res, next)
     const logs = getRequestLogs()
-    expect(logs[logs.length - 1].players).toBe('unknown')
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
   })
 
   test('skips logging for .css, .js, .html, and /scripts/ URLs', () => {
@@ -91,7 +106,12 @@ describe('requestLoggerMiddleware', () => {
     req = { url: '/gaming/start', body: { gameID: 1 } }
     requestLoggerMiddleware(req, res, next)
     const logs = getRequestLogs()
-    expect(logs[logs.length - 1].players).toBe('unknown')
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
   })
 
   test('handles request with no body property', () => {
@@ -160,7 +180,12 @@ describe('requestLoggerMiddleware', () => {
     req = { url: '/gaming/start', body: { gameID: 1 } }
     requestLoggerMiddleware(req, res, next)
     const logs = getRequestLogs()
-    expect(logs[logs.length - 1].players).toBe('unknown')
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
   })
 
   test('handles request with body as undefined', () => {
@@ -184,7 +209,8 @@ describe('requestLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: 'unknown',
       action: 'join game',
-      details: 'Joined game with ID: unknown'
+      details: 'Joined game with ID: unknown',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 
@@ -199,7 +225,8 @@ describe('requestLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: 1,
       action: 'discussion message',
-      details: `Message: ${JSON.stringify({ customData: 'some value' })}`
+      details: `Message: ${JSON.stringify({ customData: 'some value' })}`,
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 })
@@ -209,7 +236,6 @@ describe('socketLoggerMiddleware', () => {
   beforeEach(() => {
     resetLogs()
     next = jest.fn()
-    // Mock socket object with necessary properties and methods
     socket = {
       onAny: jest.fn(),
       handshake: {
@@ -218,13 +244,19 @@ describe('socketLoggerMiddleware', () => {
         }
       }
     }
+    // Mock Date.toISOString to return a consistent timestamp
+    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-03-14T12:00:00.000Z')
+  })
+
+  afterEach(() => {
+    // Restore the original Date.toISOString
+    jest.restoreAllMocks()
   })
 
   test('logs chat message event', () => {
     const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
     socketLoggerMiddleware(socket, next)
 
-    // Simulate a chat message event
     const eventHandler = socket.onAny.mock.calls[0][0]
     eventHandler('chat message', { text: 'Hello world' })
 
@@ -232,7 +264,8 @@ describe('socketLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: '1',
       action: 'discussion message',
-      details: 'Message: Hello world'
+      details: 'Message: Hello world',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 
@@ -240,7 +273,6 @@ describe('socketLoggerMiddleware', () => {
     const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
     socketLoggerMiddleware(socket, next)
 
-    // Simulate a start game event
     const eventHandler = socket.onAny.mock.calls[0][0]
     eventHandler('start game', { gameID: 42 })
 
@@ -248,7 +280,8 @@ describe('socketLoggerMiddleware', () => {
     expect(logs[logs.length - 1]).toEqual({
       players: '1',
       action: 'start game',
-      details: 'Started game with ID: 42'
+      details: 'Started game with ID: 42',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
   })
 

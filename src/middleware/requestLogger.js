@@ -33,7 +33,8 @@ function socketLoggerMiddleware (socket, next) {
     requestLogs.push({
       players: cookies.playerID || 'unknown',
       action,
-      details
+      details,
+      timestamp: new Date().toISOString()
     })
   })
   next()
@@ -60,7 +61,8 @@ function requestLoggerMiddleware (req, res, next) {
   requestLogs.push({
     players: req.cookies?.playerID || 'unknown',
     action,
-    details
+    details,
+    timestamp: new Date().toISOString()
   })
   next()
 }
