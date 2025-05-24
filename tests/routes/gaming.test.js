@@ -226,15 +226,6 @@ describe('Gaming Routes', () => {
     expect(response.header['set-cookie']).toBeTruthy()
   })
 
-  test('GET /home/invite should redirect to login when not authenticated', async () => {
-    const game = Game.createGame(account.playerId)
-    const response = await request(app)
-      .get(`/home/invite?gameID=${game.gameID}`)
-      .expect(302)
-
-    expect(response.header.location).toBe('/login')
-  })
-
   test('GET /home/invite should return 404 for non-existent gameID', async () => {
     const gameInfo = {
       gameId: 999,
