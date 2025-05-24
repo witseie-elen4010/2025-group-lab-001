@@ -26,6 +26,23 @@ const verifyToken = (req, res, next) => {
   }
 }
 
+const verifyTemporaryToken = (req, res, next) => {
+  const token = req.cookies.tempToken
+
+  if (!token) {
+    return res.status(401).redirect('/login')
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET)
+    req.user = decoded
+    next()
+  } catch (err) {
+    return res.status(401).redirect('/login')
+  }
+}
+
 module.exports = {
-  verifyToken
+  verifyToken,
+  verifyTemporaryToken
 }
