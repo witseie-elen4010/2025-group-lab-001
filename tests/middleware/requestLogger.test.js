@@ -1,110 +1,328 @@
 /* eslint-env jest */
 'use strict'
 
-const { requestLoggerMiddleware, socketLoggerMiddleware, getRequestLogs } = require('@middleware/requestLogger')
+const { requestLoggerMiddleware, getRequestLogs } = require('../../src/middleware/requestLogger')
 
-describe('Request Logger Middleware', () => {
-  let mockReq
-  let mockRes
-  let mockNext
+function resetLogs () {
+  getRequestLogs().length = 0
+}
 
+describe('requestLoggerMiddleware', () => {
+  let req, res, next
   beforeEach(() => {
-    mockReq = {
-      url: '/test',
-      method: 'GET',
-      cookies: { playerID: '123' },
-      body: {}
-    }
-    mockRes = {}
-    mockNext = jest.fn()
+    resetLogs()
+    res = {}
+    next = jest.fn()
+    // Mock Date.toISOString to return a consistent timestamp
+    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-03-14T12:00:00.000Z')
   })
 
-  test('should log HTTP requests', () => {
-    requestLoggerMiddleware(mockReq, mockRes, mockNext)
-    const logs = getRequestLogs()
-    const lastLog = logs[logs.length - 1]
+  afterEach(() => {
+    // Restore the original Date.toISOString
+    jest.restoreAllMocks()
+  })
 
-    expect(lastLog).toEqual({
-      type: 'http',
-      timestamp: expect.any(String),
-      playerID: '123',
-      method: 'GET',
-      url: '/test',
-      body: {}
+  test('logs start game action', () => {
+    req = { url: '/gaming/start', body: { gameID: 1 }, cookies: { playerID: 5, gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 5,
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
     })
-    expect(mockNext).toHaveBeenCalled()
   })
 
-  test('should skip logging static files', () => {
-    const initialLogsLength = getRequestLogs().length
-    mockReq.url = '/scripts/test.js'
-
-    requestLoggerMiddleware(mockReq, mockRes, mockNext)
-
-    expect(getRequestLogs().length).toBe(initialLogsLength)
-    expect(mockNext).toHaveBeenCalled()
+  test('skips unmapped actions', () => {
+    req = { url: '/unmapped/endpoint', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
   })
 
-  test('should handle missing playerID cookie', () => {
-    mockReq.cookies = {}
+  test('skips logging if body is empty (except join game)', () => {
+    req = { url: '/gaming/voting', body: {}, cookies: { playerID: 2 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
 
-    requestLoggerMiddleware(mockReq, mockRes, mockNext)
+  test('skips logging for sensitive endpoints', () => {
+    req = { url: '/login', body: { email: 'a@b.com' }, cookies: { playerID: 4 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('cast vote logs only if vote is present', () => {
+    req = { url: '/gaming/voting', body: { vote: 'player1' }, cookies: { playerID: 5 } }
+    requestLoggerMiddleware(req, res, next)
     const logs = getRequestLogs()
-    const lastLog = logs[logs.length - 1]
+    expect(logs[logs.length - 1]).toEqual({
+      players: 5,
+      action: 'cast vote',
+      details: 'Voted for player: player1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
 
-    expect(lastLog.playerID).toBe('unknown')
+  test('logs join game with missing gameID in cookies', () => {
+    req = { url: '/home/join', body: {}, cookies: { playerID: 3 } }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 3,
+      action: 'join game',
+      details: 'Joined game with ID: unknown',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('logs with missing playerID in cookies', () => {
+    req = { url: '/gaming/start', body: { gameID: 1 }, cookies: { gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('skips logging for .css, .js, .html, and /scripts/ URLs', () => {
+    const staticUrls = [
+      '/scripts/test.js',
+      '/styles/main.css',
+      '/index.html',
+      '/main.js'
+    ]
+    staticUrls.forEach(url => {
+      req = { url, body: { foo: 'bar' }, cookies: { playerID: 1 } }
+      requestLoggerMiddleware(req, res, next)
+      expect(getRequestLogs().length).toBe(0)
+    })
+  })
+
+  test('handles request with no cookies at all', () => {
+    req = { url: '/gaming/start', body: { gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('handles request with no body property', () => {
+    req = { url: '/gaming/start', cookies: { playerID: 1, gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    // Should not log because body is undefined (treated as empty)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('handles request with non-object body', () => {
+    req = { url: '/gaming/start', body: 'not-an-object', cookies: { playerID: 1, gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    // Should not log because body is not an object (treated as empty)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for .css file', () => {
+    req = { url: '/style.css', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for .js file', () => {
+    req = { url: '/main.js', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for .html file', () => {
+    req = { url: '/index.html', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for /scripts/ path', () => {
+    req = { url: '/scripts/app.js', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for /login path', () => {
+    req = { url: '/login', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging for /createAccount path', () => {
+    req = { url: '/createAccount', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging if action is not mapped', () => {
+    req = { url: '/not-mapped', body: { foo: 'bar' }, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('skips logging if formatter returns empty string', () => {
+    req = { url: '/gaming/voting', body: {}, cookies: { playerID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('handles request with cookies as undefined', () => {
+    req = { url: '/gaming/start', body: { gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'start game',
+      details: 'Started game with ID: 1',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('handles request with body as undefined', () => {
+    req = { url: '/gaming/start', cookies: { playerID: 1, gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    // Should not log because body is undefined (treated as empty)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('handles request with body as non-object', () => {
+    req = { url: '/gaming/start', body: 'not-an-object', cookies: { playerID: 1, gameID: 1 } }
+    requestLoggerMiddleware(req, res, next)
+    // Should not log because body is not an object (treated as empty)
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('logs join game with missing playerID and gameID', () => {
+    req = { url: '/home/join', body: {} }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 'unknown',
+      action: 'join game',
+      details: 'Joined game with ID: unknown',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('logs discussion message with non-text data', () => {
+    req = {
+      url: '/gaming/chatRoom',
+      body: { customData: 'some value' },
+      cookies: { playerID: 1, gameID: 1 }
+    }
+    requestLoggerMiddleware(req, res, next)
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: 1,
+      action: 'discussion message',
+      details: `Message: ${JSON.stringify({ customData: 'some value' })}`,
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
   })
 })
 
-describe('Socket Logger Middleware', () => {
-  test('should log websocket events', () => {
-    const mockSocket = {
+describe('socketLoggerMiddleware', () => {
+  let socket, next
+  beforeEach(() => {
+    resetLogs()
+    next = jest.fn()
+    socket = {
+      onAny: jest.fn(),
       handshake: {
         headers: {
-          cookie: 'playerID=456'
+          cookie: 'playerID=1; gameID=42'
         }
-      },
-      onAny: jest.fn()
+      }
     }
-    const mockNext = jest.fn()
-
-    socketLoggerMiddleware(mockSocket, mockNext)
-
-    // Simulate a websocket event
-    const eventHandler = mockSocket.onAny.mock.calls[0][0]
-    eventHandler('chat message', { text: 'test message' })
-
-    const logs = getRequestLogs()
-    const lastLog = logs[logs.length - 1]
-
-    expect(lastLog).toEqual({
-      type: 'websocket',
-      timestamp: expect.any(String),
-      playerID: '456',
-      method: 'chat message',
-      url: 'socket.io',
-      body: { text: 'test message' }
-    })
-    expect(mockNext).toHaveBeenCalled()
+    // Mock Date.toISOString to return a consistent timestamp
+    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-03-14T12:00:00.000Z')
   })
 
-  test('should handle missing cookie in websocket connection', () => {
-    const mockSocket = {
-      handshake: {
-        headers: {}
-      },
-      onAny: jest.fn()
-    }
-    const mockNext = jest.fn()
+  afterEach(() => {
+    // Restore the original Date.toISOString
+    jest.restoreAllMocks()
+  })
 
-    socketLoggerMiddleware(mockSocket, mockNext)
+  test('logs chat message event', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socketLoggerMiddleware(socket, next)
 
-    const eventHandler = mockSocket.onAny.mock.calls[0][0]
-    eventHandler('chat message', { text: 'test message' })
+    const eventHandler = socket.onAny.mock.calls[0][0]
+    eventHandler('chat message', { text: 'Hello world' })
 
     const logs = getRequestLogs()
-    const lastLog = logs[logs.length - 1]
+    expect(logs[logs.length - 1]).toEqual({
+      players: '1',
+      action: 'discussion message',
+      details: 'Message: Hello world',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
 
-    expect(lastLog.playerID).toBe('unknown')
+  test('logs start game event', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socketLoggerMiddleware(socket, next)
+
+    const eventHandler = socket.onAny.mock.calls[0][0]
+    eventHandler('start game', { gameID: 42 })
+
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1]).toEqual({
+      players: '1',
+      action: 'start game',
+      details: 'Started game with ID: 42',
+      timestamp: '2024-03-14T12:00:00.000Z'
+    })
+  })
+
+  test('skips unmapped events', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socketLoggerMiddleware(socket, next)
+
+    // Simulate an unmapped event
+    const eventHandler = socket.onAny.mock.calls[0][0]
+    eventHandler('unmapped_event', { data: 'test' })
+
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('handles missing cookies', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socket.handshake.headers.cookie = ''
+    socketLoggerMiddleware(socket, next)
+
+    // Simulate a chat message event
+    const eventHandler = socket.onAny.mock.calls[0][0]
+    eventHandler('chat message', { text: 'Hello world' })
+
+    const logs = getRequestLogs()
+    expect(logs[logs.length - 1].players).toBe('unknown')
+  })
+
+  test('skips empty data', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socketLoggerMiddleware(socket, next)
+
+    // Simulate an event with empty data
+    const eventHandler = socket.onAny.mock.calls[0][0]
+    eventHandler('chat message', {})
+
+    expect(getRequestLogs().length).toBe(0)
+  })
+
+  test('calls next() after setting up event handler', () => {
+    const { socketLoggerMiddleware } = require('../../src/middleware/requestLogger')
+    socketLoggerMiddleware(socket, next)
+    expect(next).toHaveBeenCalled()
   })
 })

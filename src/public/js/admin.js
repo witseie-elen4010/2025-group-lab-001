@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const logsTable = document.getElementById('logs-table')
   const refreshBtn = document.getElementById('refresh')
 
+  function formatTimestamp (timestamp) {
+    const date = new Date(timestamp)
+    return date.toLocaleString() // This will show date and time in local format
+  }
+
   async function fetchLogs () {
     try {
       const response = await fetch('/admin/logs')
@@ -9,13 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       logsTable.innerHTML = logs.map(log => `
         <tr>
-          <td>${new Date(log.timestamp).toLocaleString()}</td>
-          <td>${log.type || 'http'}</td>
-          <td>${log.playerID}</td>
-          <td>${log.type === 'websocket' ? log.event : log.method}</td>
-          <td>${log.type === 'websocket'
-              ? JSON.stringify(log.data)
-              : `${log.url} ${JSON.stringify(log.body)}`}</td>
+          <td>${formatTimestamp(log.timestamp)}</td>
+          <td>${log.players}</td>
+          <td>${log.action}</td>
+          <td>${log.details}</td>
         </tr>
       `).join('')
     } catch (error) {

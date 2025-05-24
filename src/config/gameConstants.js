@@ -1,5 +1,18 @@
 'use strict'
 
+const ACTION_MAP = {
+  '/gaming/invite': 'join game',
+  '/home/join': 'join game',
+  '/gaming/start': 'start game',
+  '/gaming/share-word': 'share word',
+  '/gaming/voting': 'cast vote',
+  '/gaming/chatRoom': 'discussion message',
+  'start game': 'start game',
+  'start discussion': 'discussion message',
+  'start voting': 'cast vote',
+  'chat message': 'discussion message'
+}
+
 module.exports = {
   ROLES: {
     CIVILIAN: 'civilian',
@@ -17,5 +30,6 @@ module.exports = {
   // Can add more game constants here as needed
   MAX_PLAYERS: 10,
   MIN_PLAYERS: 3,
-  DEFAULT_TIMEOUT: 30000
+  DEFAULT_TIMEOUT: 30000,
+  ACTION_MAP
 }
