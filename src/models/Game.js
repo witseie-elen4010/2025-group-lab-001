@@ -50,8 +50,8 @@ class Game {
     if (this.imposter !== null) {
       this.players[this.imposter].role = 'civilian'
     }
-    const timestamp = Date.now()
-    this.imposter = timestamp % this.players.length
+    console.log(Math.floor(Math.random() * this.players.length))
+    this.imposter = Math.floor(Math.random() * this.players.length)
     this.players[this.imposter].role = 'imposter'
     this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
@@ -99,6 +99,7 @@ class Game {
     this.players.forEach(player => {
       player.setActive(true)
       player.word = this.wordPair[player.role]
+      this.reassignRoles()
     })
   }
 
@@ -166,5 +167,4 @@ class Game {
     })
   }
 }
-
 module.exports = Game
