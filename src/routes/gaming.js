@@ -17,7 +17,6 @@ module.exports = (io) => {
   gaming.use((req, res, next) => {
     const gameID = req.user.gameInfo?.gameId
     const selectedGame = Game.findGame(gameID)
-    console.log(selectedGame.players)
     if (selectedGame) {
       const player = selectedGame.findPlayer(req.user.playerId)
       if (player) {
@@ -29,11 +28,9 @@ module.exports = (io) => {
         req.player = null
         next()
       } else {
-        console.log('no player')
         res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
       }
     } else {
-      console.log('no game')
       res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
     }
   })
