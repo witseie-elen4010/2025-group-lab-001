@@ -50,7 +50,6 @@ class Game {
     if (this.imposter !== null) {
       this.players[this.imposter].role = 'civilian'
     }
-    console.log(Math.floor(Math.random() * this.players.length))
     this.imposter = Math.floor(Math.random() * this.players.length)
     this.players[this.imposter].role = 'imposter'
     this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
