@@ -40,7 +40,6 @@ function socketLoggerMiddleware (socket, next) {
 }
 
 function requestLoggerMiddleware (req, res, next) {
-  // Skip static files, scripts, and sensitive endpoints
   if (req.url.startsWith('/scripts/') ||
       req.url.endsWith('.html') ||
       req.url.endsWith('.js') ||
@@ -50,12 +49,14 @@ function requestLoggerMiddleware (req, res, next) {
     return next()
   }
   const action = ACTION_MAP[req.url]
-  if (!action) return next() // Only log mapped actions
-  const data = req.body || {}
-  if (isEmpty(data)) return next()
+  if (!action) return next()
+  let data = req.body || {}
+  // Treat non-object or array body as empty
+  if (typeof data !== 'object' || Array.isArray(data)) data = {}
   const context = { gameID: req.cookies?.gameID }
   const details = getFormattedDetails(action, data, context)
-  if (!details) return next() // Skip if details is empty (e.g., missing vote)
+  // Always log join game, otherwise skip if no data/details
+  if (action !== 'join game' && (isEmpty(data) || !details)) return next()
   requestLogs.push({
     players: req.cookies?.playerID || 'unknown',
     action,
@@ -68,4 +69,4 @@ function getRequestLogs () {
   return requestLogs
 }
 
-module.exports = { requestLoggerMiddleware, socketLoggerMiddleware, getRequestLogs }
+module.exports = { requestLoggerMiddleware, getRequestLogs, socketLoggerMiddleware }
