@@ -9,6 +9,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 let playerIdCounter = 1 // Counter for generating unique player IDs
 
+// Function to generate a new player ID for guests
+const generateGuestPlayerId = () => {
+  return playerIdCounter++
+}
+
 class Account {
   constructor (email, username, password) {
     this.email = email
@@ -29,6 +34,10 @@ const newAccount = new Account('test@pf.org', 'testUser', bcrypt.hashSync(testPa
 accounts.push(newAccount)
 
 const generateToken = (username, playerId, gameInfo = null) => {
+  // If no playerId is provided (guest user), generate one
+  if (!playerId) {
+    playerId = generateGuestPlayerId()
+  }
   const payload = {
     username,
     playerId,
@@ -39,6 +48,10 @@ const generateToken = (username, playerId, gameInfo = null) => {
 }
 
 const checkValidUser = async function (username, playerId) {
+  // If playerId is not provided, this is likely a guest user
+  if (!playerId) {
+    return false
+  }
   return accounts.some(account => account.username === username && account.playerId === playerId)
 }
 
@@ -132,5 +145,6 @@ module.exports = {
   loginAccount,
   accounts,
   generateToken,
-  checkValidUser
+  checkValidUser,
+  generateGuestPlayerId
 }
