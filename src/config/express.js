@@ -78,6 +78,7 @@ function createApp () {
   app.use(requestLoggerMiddleware) // Add the logger middleware
 
   app.use('/scripts', express.static(path.join(__dirname, '..', 'public', 'js')))
+  app.use('/fonts', express.static(path.join(__dirname, '..', 'public', 'fonts')))
 
   // The code commented below is for debugging purposes. It returns the request method and URL for each request made to the server.
   // app.use((req, res, next) => {

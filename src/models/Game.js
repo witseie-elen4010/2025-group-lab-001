@@ -77,8 +77,8 @@ class Game {
     this.state = newState
   }
 
-  static createGame (hostId) {
-    const game = new Game(hostId)
+  static createGame (hostId, totalRounds = 1, maxPlayers = 5) {
+    const game = new Game(hostId, totalRounds, maxPlayers)
     game.reassignRoles()
     Game.#activeGames.push(game)
     return game
@@ -90,8 +90,7 @@ class Game {
 
   // Resets the Game
   startNewRound () {
-    if (this.currentRound > this.totalRounds) {
-      this._isFinished = true
+    if (this.currentRound >= this.totalRounds) {
       this.roundsComplete = true
       return
     }
