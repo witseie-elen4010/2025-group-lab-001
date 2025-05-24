@@ -9,11 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       logsTable.innerHTML = logs.map(log => `
         <tr>
-          <td>${new Date(log.timestamp).toLocaleString()}</td>
-          <td>${log.type || 'http'}</td>
-          <td>${log.playerID}</td>
-          <td>${log.method}</td>
-          <td>${log.url} ${JSON.stringify(log.body)}</td>
+          <td>${log.players}</td>
+          <td>${log.action}</td>
+          <td>${log.details}</td>
         </tr>
       `).join('')
     } catch (error) {
