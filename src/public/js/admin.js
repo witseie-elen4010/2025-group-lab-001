@@ -12,10 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${new Date(log.timestamp).toLocaleString()}</td>
           <td>${log.type || 'http'}</td>
           <td>${log.playerID}</td>
-          <td>${log.type === 'websocket' ? log.event : log.method}</td>
-          <td>${log.type === 'websocket'
-              ? JSON.stringify(log.data)
-              : `${log.url} ${JSON.stringify(log.body)}`}</td>
+          <td>${log.method}</td>
+          <td>${log.url} ${JSON.stringify(log.body)}</td>
         </tr>
       `).join('')
     } catch (error) {
