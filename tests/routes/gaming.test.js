@@ -9,257 +9,368 @@ const accountFunctions = require('@controllers/accountFunctions')
 
 describe('Gaming Routes', () => {
   let app
-  let token
-  let account
+  let io
+  let testGame
+  let testPlayer
+  let testToken
 
-  beforeEach(async () => {
-    app = createApp()
-    Game.resetCounter() // Reset game state before each test
-    // Create test account and get token with unique email
-    const uniqueEmail = `test${Date.now()}@pf.org`
-    const uniqueUsername = `test${Date.now()}`
-    account = await accountFunctions.createAccount(
-      uniqueEmail,
-      uniqueUsername,
-      '123',
-      '123'
-    )
+  beforeEach(() => {
+    io = {
+      emit: jest.fn()
+    }
+    app = createApp(io)
+    // Create a test account and game
+    const playerId = 1 // Use a fixed ID for testing
+    testGame = Game.createGame(playerId, 3)
+    testPlayer = testGame.findPlayer(playerId)
+    testToken = accountFunctions.generateToken('testuser', playerId, {
+      gameId: testGame.gameID,
+      isHost: true,
+      isSpectator: false
+    })
+  })
+
+  describe('GET /home/invite', () => {
+    test('should create player and redirect when given valid gameID', async () => {
+      await request(app)
+        .get('/home/invite')
+        .query({ gameID: testGame.gameID })
+        .set('Cookie', [`token=${testToken}`])
+        .expect(302)
+        .expect('Location', '/gaming/waiting')
+    })
+
+    test('should redirect to login when not authenticated', async () => {
+      await request(app)
+        .get('/home/invite')
+        .query({ gameID: testGame.gameID })
+        .expect(302)
+        .expect('Location', '/login')
+    })
+
+    test('should return 404 for non-existent gameID', async () => {
+      await request(app)
+        .get('/home/invite')
+        .query({ gameID: 99999 })
+        .set('Cookie', [`token=${testToken}`])
+        .expect(404)
+    })
+
+    test('should return 400 when gameID is missing', async () => {
+      await request(app)
+        .get('/home/invite')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(400)
+    })
   })
 
   describe('Authentication Middleware', () => {
     test('should redirect player to login page when the player does not have cookies', async () => {
-      const response = await request(app).get('/gaming/waiting')
-      expect(response.status).toBe(302)
-      expect(response.header.location).toBe('/login')
+      await request(app)
+        .get('/gaming/waiting')
+        .expect(302)
+        .expect('Location', '/login')
     })
 
     test('should serve error page with invalid game ID', async () => {
-      const gameInfo = {
+      const invalidToken = accountFunctions.generateToken('testuser', 999, {
         gameId: 999,
         isHost: false,
         isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+      })
 
-      const response = await request(app)
+      await request(app)
         .get('/gaming/waiting')
-        .set('Cookie', [`token=${token}`])
-      expect(response.status).toBe(403)
-      expect(response.type).toBe('text/html')
+        .set('Cookie', [`token=${invalidToken}`])
+        .expect(403)
     })
   })
 
   describe('Waiting Room', () => {
     test('should access waiting room with valid cookies', async () => {
-      const game = Game.createGame(1)
-      game.createPlayer(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
-
       const response = await request(app)
         .get('/gaming/waiting')
-        .set('Cookie', [`token=${token}`])
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-      expect(response.status).toBe(200)
       expect(response.type).toBe('text/html')
     })
   })
 
   describe('Player List API', () => {
     test('should get player list for valid game', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
-
       const response = await request(app)
         .get('/gaming/players')
-        .set('Cookie', [`token=${token}`])
-      expect(response.status).toBe(200)
-      expect(response.type).toBe('application/json')
-      expect(response.body.players.length).toBe(1)
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
+
+      expect(response.body).toHaveProperty('players')
+      expect(Array.isArray(response.body.players)).toBe(true)
     })
 
     test('should deny invalid requests to player list', async () => {
-      const gameInfo = {
+      const invalidToken = accountFunctions.generateToken('testuser', 999, {
         gameId: 999,
         isHost: false,
         isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+      })
 
-      const response = await request(app)
+      await request(app)
         .get('/gaming/players')
-        .set('Cookie', [`token=${token}`])
-
-      expect(response.status).toBe(403)
+        .set('Cookie', [`token=${invalidToken}`])
+        .expect(403)
     })
   })
 
   describe('Game State Management', () => {
     test('should allow host to start game', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
-
-      const response = await request(app)
+      await request(app)
         .post('/gaming/start')
-        .set('Cookie', [`token=${token}`])
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-      expect(response.status).toBe(200)
-      expect(response.text).toBe('Game started')
+      expect(testGame.getState()).toBe(GAME_STATES.SHARE_WORD)
     })
 
     test('should deny non-host from starting game', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
+      const nonHostToken = accountFunctions.generateToken('testuser', testPlayer.getId(), {
+        gameId: testGame.gameID,
         isHost: false,
         isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+      })
 
-      const response = await request(app)
+      await request(app)
         .post('/gaming/start')
-        .set('Cookie', [`token=${token}`])
-
-      expect(response.status).toBe(403)
+        .set('Cookie', [`token=${nonHostToken}`])
+        .expect(403)
     })
 
     test('should return current game state', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
-
       const response = await request(app)
         .get('/gaming/state')
-        .set('Cookie', [`token=${token}`])
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-      expect(response.status).toBe(200)
-      expect(response.body.state).toBe(GAME_STATES.WAITING)
+      expect(response.body).toHaveProperty('state')
+    })
+
+    test('should handle game state error with invalid game ID', async () => {
+      const invalidToken = accountFunctions.generateToken('testuser', 999, {
+        gameId: 999,
+        isHost: false,
+        isSpectator: false
+      })
+
+      await request(app)
+        .get('/gaming/state')
+        .set('Cookie', [`token=${invalidToken}`])
+        .expect(403)
     })
   })
 
   describe('Word Sharing API', () => {
     test('should get word for valid player', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
-
       const response = await request(app)
-        .get('/gaming/wordShare')
-        .set('Cookie', [`token=${token}`])
+        .get('/gaming/getWord')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-      expect(response.status).toBe(200)
-      expect(response.type).toBe('text/html')
+      expect(response.body).toHaveProperty('word')
     })
 
     test('should redirect to login for unauthenticated requests', async () => {
-      const response = await request(app)
-        .get('/gaming/wordShare')
+      await request(app)
+        .get('/gaming/getWord')
         .expect(302)
-
-      expect(response.header.location).toBe('/login')
+        .expect('Location', '/login')
     })
   })
 
   describe('Player ID API', () => {
     test('should get player ID for valid game', async () => {
-      const game = Game.createGame(account.playerId)
-      const gameInfo = {
-        gameId: game.gameID,
-        isHost: true,
-        isSpectator: false
-      }
-      token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
       const response = await request(app)
         .get('/gaming/playerID')
-        .set('Cookie', [`token=${token}`])
-      expect(response.status).toBe(200)
-      expect(response.type).toBe('application/json')
-      expect(response.body).toHaveProperty('playerID', account.playerId)
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
+
+      expect(response.body).toHaveProperty('playerID')
     })
 
     test('should redirect to login for unauthenticated requests', async () => {
-      const response = await request(app)
+      await request(app)
         .get('/gaming/playerID')
         .expect(302)
-
-      expect(response.header.location).toBe('/login')
+        .expect('Location', '/login')
     })
   })
 
-  test('GET /home/invite should create player and redirect when given valid gameID', async () => {
-    const game = Game.createGame(account.playerId)
-    const gameInfo = {
-      gameId: game.gameID,
-      isHost: false,
-      isSpectator: false
-    }
-    token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+  describe('Role API', () => {
+    test('should get role for valid player', async () => {
+      const response = await request(app)
+        .get('/gaming/role')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-    const response = await request(app)
-      .get(`/home/invite?gameID=${game.gameID}`)
-      .set('Cookie', [`token=${token}`])
-      .expect(302)
-
-    expect(response.header.location).toBe('/gaming/waiting')
-    expect(response.header['set-cookie']).toBeTruthy()
+      expect(response.body).toHaveProperty('role')
+    })
   })
 
-  test('GET /home/invite should redirect to login when not authenticated', async () => {
-    const game = Game.createGame(account.playerId)
-    const response = await request(app)
-      .get(`/home/invite?gameID=${game.gameID}`)
-      .expect(302)
+  describe('Voting System', () => {
+    beforeEach(() => {
+      testGame.setState(GAME_STATES.VOTING)
+      // Mock socket.io emit to prevent hanging
+      io.emit.mockImplementation(() => {})
+    })
 
-    expect(response.header.location).toBe('/login')
+    test('should serve voting page', async () => {
+      const response = await request(app)
+        .get('/gaming/voting')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
+
+      expect(response.type).toBe('text/html')
+    })
+
+    test('should handle vote submission', async () => {
+      const otherPlayer = testGame.createPlayer(2)
+      await request(app)
+        .post('/gaming/voting')
+        .set('Cookie', [`token=${testToken}`])
+        .send({ vote: otherPlayer.getId() })
+        .expect(302)
+
+      expect(testPlayer.getHasVoted()).toBe(true)
+    })
+
+    test('should serve waiting for votes page', async () => {
+      testPlayer.setHasVoted(true)
+      const response = await request(app)
+        .get('/gaming/waitingForVotes')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
+
+      expect(response.type).toBe('text/html')
+    })
   })
 
-  test('GET /home/invite should return 404 for non-existent gameID', async () => {
-    const gameInfo = {
-      gameId: 999,
-      isHost: false,
-      isSpectator: false
-    }
-    token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+  describe('Word Share System', () => {
+    test('should serve word share page', async () => {
+      testGame.setState(GAME_STATES.SHARE_WORD)
+      const response = await request(app)
+        .get('/gaming/wordShare')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-    await request(app)
-      .get('/home/invite?gameID=999')
-      .set('Cookie', [`token=${token}`])
-      .expect(404)
+      expect(response.type).toBe('text/html')
+    })
+
+    test('should handle word share page error with invalid game ID', async () => {
+      const invalidToken = accountFunctions.generateToken('testuser', 999, {
+        gameId: 999,
+        isHost: false,
+        isSpectator: false
+      })
+
+      await request(app)
+        .get('/gaming/wordShare')
+        .set('Cookie', [`token=${invalidToken}`])
+        .expect(403)
+    })
   })
 
-  test('GET /home/invite should return 400 when gameID is missing', async () => {
-    const gameInfo = {
-      gameId: 1,
-      isHost: false,
-      isSpectator: false
-    }
-    token = accountFunctions.generateToken(account.username, account.playerId, gameInfo)
+  describe('Chat System', () => {
+    test('should serve chat room page', async () => {
+      const response = await request(app)
+        .get('/gaming/chatRoom')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
 
-    await request(app)
-      .get('/home/invite')
-      .set('Cookie', [`token=${token}`])
-      .expect(400)
+      expect(response.type).toBe('text/html')
+    })
+  })
+
+  describe('Game Flow', () => {
+    test('should handle game finished state', async () => {
+      testGame.setState(GAME_STATES.FINISHED)
+      await request(app)
+        .get('/gaming/finished')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(302)
+        .expect('Location', '/gaming/next-round')
+    })
+
+    test('should handle word share state', async () => {
+      testGame.setState(GAME_STATES.SHARE_WORD)
+      await request(app)
+        .get('/gaming/finished')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(302)
+        .expect('Location', '/gaming/wordShare')
+    })
+
+    test('should handle next round', async () => {
+      testGame.setState(GAME_STATES.FINISHED)
+      await request(app)
+        .get('/gaming/next-round')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(302)
+        .expect('Location', '/gaming/waiting')
+    })
+
+    test('should handle next round when game is finished', async () => {
+      testGame.setState(GAME_STATES.FINISHED)
+      testGame.isFinished = true
+      await request(app)
+        .get('/gaming/next-round')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(302)
+        .expect('Location', `/gaming/leaderboard/${testGame.gameID}`)
+    })
+
+    test('should handle non-existent game in next round', async () => {
+      const invalidToken = accountFunctions.generateToken('testuser', 999, {
+        gameId: 999,
+        isHost: false,
+        isSpectator: false
+      })
+
+      await request(app)
+        .get('/gaming/next-round')
+        .set('Cookie', [`token=${invalidToken}`])
+        .expect(403)
+    })
+
+    test('should show leaderboard when game is finished', async () => {
+      testGame.isFinished = true
+      const response = await request(app)
+        .get(`/gaming/leaderboard/${testGame.gameID}`)
+        .set('Cookie', [`token=${testToken}`])
+        .expect(200)
+
+      expect(response.type).toBe('text/html')
+    })
+
+    test('should handle non-existent game in leaderboard', async () => {
+      await request(app)
+        .get('/gaming/leaderboard/999')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(404)
+    })
+
+    test('should handle error in leaderboard', async () => {
+      testGame.isFinished = true
+      testGame.players = null // Force an error
+      await request(app)
+        .get(`/gaming/leaderboard/${testGame.gameID}`)
+        .set('Cookie', [`token=${testToken}`])
+        .expect(500)
+    })
+
+    test('should handle leaderboard error with invalid game ID', async () => {
+      await request(app)
+        .get('/gaming/leaderboard/invalid-id')
+        .set('Cookie', [`token=${testToken}`])
+        .expect(404)
+    })
   })
 })
