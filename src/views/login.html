@@ -30,16 +30,8 @@
     <input type="password" placeholder="Enter Password" name="password" required>
 
     <button type="submit">Login</button>
+    <a href="/forgotPassword">Forgot Password</a>
   </form>
-  <script>
-    const params = new URLSearchParams(window.location.search)
-    const error = params.get('error')
-    if (error) {
-      const msg = document.createElement('p')
-      msg.innerText = error
-      msg.style.color = 'red'
-      document.body.insertBefore(msg, document.body.firstChild)
-    }
-  </script>
+  <script src="/scripts/accounts.js"></script>
 </body>
 </html>

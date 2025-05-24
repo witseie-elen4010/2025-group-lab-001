@@ -32,21 +32,20 @@ describe('Admin Routes', () => {
     })
 
     test('should include request logs after making requests', async () => {
-      // Make a sample request first
+      // Make a sample request that will be logged (e.g., start game)
       await request(app)
-        .get('/gaming/waiting')
-        .set('Cookie', ['gameID=0', 'playerID=1'])
+        .post('/gaming/start')
+        .send({ gameID: 1 })
+        .set('Cookie', ['gameID=1', 'playerID=1'])
 
       // Then check logs
       const response = await request(app)
         .get('/admin/logs')
 
       expect(response.body.length).toBeGreaterThan(0)
-      expect(response.body[0]).toHaveProperty('type')
-      expect(response.body[0]).toHaveProperty('timestamp')
-      expect(response.body[0]).toHaveProperty('playerID')
-      expect(response.body[0]).toHaveProperty('method')
-      expect(response.body[0]).toHaveProperty('url')
+      expect(response.body[0]).toHaveProperty('players')
+      expect(response.body[0]).toHaveProperty('action')
+      expect(response.body[0]).toHaveProperty('details')
     })
   })
 })

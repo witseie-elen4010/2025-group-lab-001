@@ -47,7 +47,7 @@ module.exports = (io) => {
     try {
       const game = Game.findGame(Number(gameID))
 
-      if (!game) {
+      if (game === undefined) { // Switched to using game === undefined since 0 is falsy i belive
         return res.status(404).send('Game not found')
       }
 
@@ -56,18 +56,18 @@ module.exports = (io) => {
       }
 
       const currentPlayerID = req.user.playerId
-      if (!spectate) {
+      if (spectate === 'false') {
         game.createPlayer(currentPlayerID)
       }
       // Update JWT with game info
       const gameInfo = {
         gameId: gameID,
         isHost: false,
-        isSpectator: Boolean(spectate)
+        isSpectator: spectate === 'true'
       }
+
       const newToken = accountFunctions.generateToken(req.user.username, currentPlayerID, gameInfo)
       res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
-
       res.redirect('/gaming/waiting')
     } catch (error) {
       res.status(500).send('Error joining game')

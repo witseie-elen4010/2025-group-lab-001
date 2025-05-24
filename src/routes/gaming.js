@@ -17,7 +17,6 @@ module.exports = (io) => {
   gaming.use((req, res, next) => {
     const gameID = req.user.gameInfo?.gameId
     const selectedGame = Game.findGame(gameID)
-
     if (selectedGame) {
       const player = selectedGame.findPlayer(req.user.playerId)
       if (player) {

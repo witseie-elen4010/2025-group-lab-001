@@ -2,12 +2,21 @@
 
 const bcrypt = require('bcrypt')
 const valid = require('validator')
+const nodemailer = require('nodemailer')
 const jwt = require('jsonwebtoken')
 
 // JWT secret key from environment variable with fallback for development
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 let playerIdCounter = 1 // Counter for generating unique player IDs
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'plasticflamingoes.thegame@gmail.com',
+    pass: 'gpda zvoo pjwm azsf'
+  }
+})
 
 class Account {
   constructor (email, username, password) {
@@ -17,6 +26,15 @@ class Account {
     this.playerId = playerIdCounter++ // Increment counter for each new account
   }
 }
+
+class OTPAccount {
+  constructor (username, otp) {
+    this.username = username
+    this.otp = otp
+  }
+}
+
+const otpAccounts = []
 
 const hashPassword = async function (password) {
   const saltRounds = 10
@@ -120,6 +138,112 @@ const loginAccount = async function (email, password) {
   return user
 }
 
+const checkIfUser = async function (email) {
+  const result = accounts.some(account => account.email === email)
+  if (!result) {
+    return new Error('Account not found')
+  }
+  return result
+}
+
+const getUsername = async function (email) {
+  const account = accounts.find(account => account.email === email)
+  if (!account) {
+    return new Error('Account not found')
+  }
+  return account.username
+}
+
+const getEmail = async function (username) {
+  const account = accounts.find(account => account.username === username)
+  if (!account) {
+    return new Error('Account not found')
+  }
+  return account.email
+}
+
+const sendOTP = async function (email) {
+  const otp = await generateOTP()
+
+  const mailOptions = {
+    from: 'plasticflamingoes.thegame@gamil.com',
+    to: email,
+    subject: 'Your OTP Code',
+    text: 'Your OTP code is: \n' + otp
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+    // console.log('OTP sent successfully')
+    const otpAccount = new OTPAccount(await getUsername(email), otp)
+    otpAccounts.push(otpAccount)
+  } catch (error) {
+    // console.error('Error sending OTP:', error)
+    return new Error('Failed to send OTP')
+  }
+  deleteOldOTPs(await getUsername(email))
+  return otp
+}
+
+const deleteOldOTPs = async function (username) {
+  let count = 0
+  for (let i = 0; i < otpAccounts.length; i++) {
+    if (otpAccounts[i].username === username) {
+      count++
+    }
+  }
+  if (count > 1) {
+    for (let i = 0; i < otpAccounts.length; i++) {
+      if (otpAccounts[i].username === username) {
+        otpAccounts.splice(i, 1)
+        i--
+        count--
+        if (count <= 1) {
+          break
+        }
+      }
+    }
+  }
+}
+
+const generateOTP = async function () {
+  const digits = '0123456789'
+  let otp = ''
+  const len = digits.length
+  for (let i = 0; i < 4; i++) {
+    otp += digits[Math.floor(Math.random() * len)]
+  }
+  return otp
+}
+
+const verifyOTP = async function (username, otp) {
+  const account = otpAccounts.find(account => account.username === username)
+  if (!account) {
+    return new Error('Account not found')
+  }
+  if (account.otp !== otp) {
+    return new Error('Invalid OTP')
+  }
+  // Remove the OTP account after successful verification
+  const index = otpAccounts.indexOf(account)
+  if (index > -1) {
+    otpAccounts.splice(index, 1)
+  }
+  return true
+}
+
+const resetPassword = async function (username, password, confirmPassword) {
+  if (!checkPasswordConfirmed(password, confirmPassword)) {
+    return new Error('Passwords do not match')
+  }
+  const account = accounts.find(account => account.username === username)
+  if (!account) {
+    return new Error('Account not found')
+  }
+  account.password = await hashPassword(password)
+  return true
+}
+
 module.exports = {
   createAccount,
   checkValidAccount,
@@ -130,7 +254,16 @@ module.exports = {
   checkPasswordConfirmed,
   hashPassword,
   loginAccount,
-  accounts,
   generateToken,
-  checkValidUser
+  checkValidUser,
+  checkIfUser,
+  getUsername,
+  getEmail,
+  sendOTP,
+  verifyOTP,
+  resetPassword,
+  generateOTP,
+  deleteOldOTPs,
+  accounts,
+  otpAccounts
 }
