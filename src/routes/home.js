@@ -4,11 +4,27 @@ const express = require('express')
 const { verifyToken } = require('@middleware/auth')
 const accountFunctions = require('@controllers/accountFunctions')
 
+// let accountFunctionsTmp
+// const initialiseAccountFunctions = async function () {
+//   try {
+//     accountFunctionsTmp = await import('../controllers/accountFunctions.js')
+//   } catch (error) {
+//     console.log('Error loading accountFunctions:', error)
+//   }
+// }
+// initialiseAccountFunctions()
+// const accountFunctions = accountFunctionsTmp
+
 module.exports = (io, Game) => {
   const home = express.Router()
 
-  // Apply JWT verification to all home routes
-  home.use(verifyToken)
+  home.use((req, res, next) => {
+    if (req.path === '/invite') {
+      next()
+    } else {
+      verifyToken(req, res, next)
+    }
+  })
 
   home.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
@@ -20,11 +36,12 @@ module.exports = (io, Game) => {
 
   home.post('/createGame', (req, res) => {
     const totalRounds = req.body.totalRounds
+    const dictionaryType = req.body.dictionaryType
     const timeLimit = req.body.timeLimit
     const currentPlayerID = req.user.playerId
 
     try {
-      const newGame = Game.createGame(currentPlayerID, Number(totalRounds), Number(timeLimit))
+      const newGame = Game.createGame(currentPlayerID, Number(totalRounds), String(dictionaryType), Number(timeLimit))
 
       // Update JWT with game info
       const gameInfo = {
@@ -104,7 +121,7 @@ module.exports = (io, Game) => {
       const lobbies = openGames.map(game => ({
         id: game.gameID,
         playerCount: game.players.length,
-        maxPlayers: game.maxPlayers
+        maxPlayers: game.max
       }))
       res.json({ lobbies })
     } catch (error) {
@@ -154,19 +171,63 @@ module.exports = (io, Game) => {
       if (!game.canAddPlayer()) {
         return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
       }
-
-      game.createPlayer(req.user.playerId)
-
+      // Generate a new player ID for the guest if they don't have one
+      const playerId = accountFunctions.generateGuestPlayerId()
+      game.createPlayer(playerId)
       const gameInfo = {
         gameId: gameID,
         isHost: false,
-        isSpectator: false
+        isSpectator: false,
+        isGuest: true
       }
-      const newToken = accountFunctions.generateToken(req.user.username, req.user.playerId, gameInfo)
+      const newToken = accountFunctions.generateToken(`Guest ${playerId}`, playerId, gameInfo)
       res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
       res.redirect('/gaming/waiting')
     } else {
       res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
+  })
+
+  home.get('/stats', (req, res) => {
+    // const playerId = req.user.playerId
+    const account = accountFunctions.accounts.find(acc => acc.username === req.user.username)
+
+    if (!account) {
+      return res.status(404).send('User account not found')
+    }
+
+    // Initialize pastGames if it doesn't exist
+    if (!account.pastGames) account.pastGames = []
+
+    try {
+      return res.render('userStats', {
+        username: account.username,
+        rankedPoints: account.rankedPoints || 0,
+        pastGames: account.pastGames,
+        user: req.user
+      })
+    } catch (error) {
+      return res.status(500).send('Error displaying user stats: ' + error.message)
+    }
+  })
+
+  home.get('/global-leaderboard', (req, res) => {
+    try {
+      // Get all accounts, sort by ranked points
+      const rankedAccounts = accountFunctions.accounts
+        .filter(account => account && account.username) // Ensure account and username exist
+        .map(account => ({
+          username: account.username || 'Unknown', // Provide fallback for username
+          points: account.rankedPoints || 0
+        }))
+        .sort((a, b) => b.points - a.points)
+
+      console.log('Global leaderboard requested, returning:', rankedAccounts)
+
+      res.json({ leaderboard: rankedAccounts })
+    } catch (error) {
+      console.error('Error fetching global leaderboard:', error)
+      res.status(500).json({ error: error.message })
     }
   })
 

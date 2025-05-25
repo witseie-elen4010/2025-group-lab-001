@@ -2,6 +2,7 @@
 const express = require('express')
 const path = require('path')
 const votingFunctions = require('@controllers/votingFunctions')
+const accountFunctions = require('@controllers/accountFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 const { verifyToken } = require('@middleware/auth')
 
@@ -41,6 +42,13 @@ module.exports = (io, Game) => {
   gaming.get('/players', (req, res) => {
     const game = req.game
     const playerIDs = game.players.map(player => player.getId())
+    res.json({ players: playerIDs })
+  })
+
+  gaming.get('/votingPlayers', (req, res) => {
+    const game = req.game
+    const votingPlayers = votingFunctions.getPlayersCanVote(game.players)
+    const playerIDs = votingPlayers.map(player => player.getId())
     res.json({ players: playerIDs })
   })
 
@@ -85,20 +93,28 @@ module.exports = (io, Game) => {
   })
 
   gaming.post('/voting', (req, res) => {
+    console.log('Received vote request')
     const player = req.player
     const game = req.game
-    let vote = null
+    const vote = req.body.voteValue
+    // let vote = null
     let votedPlayer = null
     if (game.getState() === GAME_STATES.VOTING) {
+      // console.log(`Player ${player.getId()} is voting`)
       if (player.getHasVoted() === false && player.isActive()) {
-        vote = req.body.vote
+        // console.log(`Player ${player.getId()} has not voted yet`)
+        // vote = req.body.vote
         if (vote !== null && vote !== undefined) {
+          // console.log(vote + ' is the vote')
           votedPlayer = game.findPlayer(vote)
           if (votedPlayer !== null && votedPlayer !== undefined) {
             votedPlayer.increaseVotesReceived()
             player.setHasVoted(true)
             game.decreaseNumVotesOustsanding()
+            // console.log(`Player ${player.getId()} voted for ${votedPlayer.getId()}`)
           }
+        } else {
+          console.error('Vote is null or undefined')
         }
       }
     }
@@ -108,6 +124,8 @@ module.exports = (io, Game) => {
         votedOutPlayer.setActive(false)
       }
       votingFunctions.checkGameEnd(game)
+      // console.log(`Player ${votedOutPlayer ? votedOutPlayer.getId() : 'none'} was voted out`)
+      // console.log(`Game state after voting: ${game.getState()}`)
       if (game.getState() === GAME_STATES.SHARE_WORD) {
         io.emit('start game', game.gameID)
       } else if (game.getState() === GAME_STATES.FINISHED) {
@@ -170,10 +188,9 @@ module.exports = (io, Game) => {
         return res.status(404).send('Game not found')
       }
       const winner = game.getWinner()
-      const players = game.players || []
       res.render('leaderboard', {
         winner,
-        leaderboard: players,
+        leaderboard: game.leaderboard.entries, // Send the leaderboard entries
         roundsCompleted: game.roundsComplete
       })
     } catch (error) {
@@ -191,8 +208,10 @@ module.exports = (io, Game) => {
 
     if (game.isFinished) {
       game.startNewRound()
+      if (game.roundsComplete) accountFunctions.storeGameResult(game)
       return res.redirect(`/gaming/leaderboard/${gameID}`)
     }
+
     return res.redirect('/gaming/waiting')
   })
 

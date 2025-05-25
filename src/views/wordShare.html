@@ -1,6 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<style>
+    @font-face {
+      font-family: 'body';
+      src: url('/fonts/body.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    body {
+      font-family: 'body';
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    button {
+      font-family: 'body';
+      font-size: 1em; /* Maintain consistent text size */
+    }
+    input {
+      font-family: 'body';
+      font-size: 1em;
+    }
+    ::placeholder {
+      font-family: 'body';
+      opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }
+</style>
 <head>
     <title>Word Share</title>
     <meta charset="utf-8" />
@@ -9,7 +45,7 @@
 
 <body>
     <h1 id = "timeUpdate"></h1>
-    <h1>Your word is</h1>
+    <h1>Your word/prompt:</h1>
     <h2 id="word"></h2>
     <ul id="messages"></ul>
     <form id = "form" action="" method="post">

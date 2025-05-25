@@ -1,6 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<style>
+    @font-face {
+      font-family: 'body';
+      src: url('/fonts/body.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    body {
+      font-family: 'body';
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    button {
+      font-family: 'body';
+      font-size: 1em; /* Maintain consistent text size */
+    }
+</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +47,14 @@
         </label><br>
         <label>
             <input type="radio" name="totalRounds" value="5"> 5 Rounds
+        </label><br><br>
+
+        <h3>Words or Prompts:</h3>
+        <label>
+            <input type="radio" name="dictionaryType" value="word" required> Words
+        </label><br>
+        <label>
+            <input type="radio" name="dictionaryType" value="prompt"> Prompts
         </label><br><br>
 
         <h3>Select Time Limits:</h3>

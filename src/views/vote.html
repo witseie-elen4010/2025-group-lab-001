@@ -1,5 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+  <style>
+    @font-face {
+      font-family: 'body';
+      src: url('/fonts/body.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    body {
+      font-family: 'body';
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    button {
+      font-family: 'body';
+      font-size: 1em; /* Maintain consistent text size */
+    }
+    input {
+      font-family: 'body';
+      font-size: 1em;
+    }
+    ::placeholder {
+      font-family: 'body';
+      opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }
+</style>
 <head>
   <meta charset="UTF-8">
   <title>Voting Page</title>
@@ -7,12 +44,16 @@
 <body>
   <h1>Vote to Eliminate a Player</h1>
   <form id="voteForm">
-    <p>Enter the ID of the player you want to vote out:</p>
-    <input type="text" id="playerId" placeholder="Player ID" required>
+    <!-- <p>Enter the ID of the player you want to vote out:</p> -->
+    <!-- <input type="text" id="playerId" placeholder="Player ID" required> -->
+    <p>Select a player to vote out:</p>
+    <div id="playerList"></div>
     <button type="submit">Submit Vote</button>
   </form>
+  
   <div id="errorDisplay"></div> <!-- Container for errors -->
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/scripts/vote.js" defer></script>
 </body>
+
 </html>
