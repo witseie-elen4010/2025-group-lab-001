@@ -24,7 +24,6 @@ let connectionError = null
 
 async function getPool () {
   if (pool) return pool
-  console.log(process.env.AzureDBAdmin)
   try {
     pool = await new mssql.ConnectionPool(config).connect()
     isConnected = true
