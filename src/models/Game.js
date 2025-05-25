@@ -8,10 +8,10 @@ class Game {
   static #gameCounter = 0
   static #activeGames = []
 
-  constructor (hostId, totalRounds = 1, maxPlayers = 5) {
+  constructor (hostId, totalRounds = 1, dictionaryType = 'word', maxPlayers = 5) {
     this.gameID = Game.#gameCounter++
     this.players = []
-    this.wordPair = Dictionary.getWordPair()
+    this.wordPair = Dictionary.getWordPair(dictionaryType)
     this.host = this.createPlayer(hostId)
     this.totalRounds = totalRounds // Total number of rounds for the game
     this.currentRound = 1
