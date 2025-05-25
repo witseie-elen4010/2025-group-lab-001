@@ -2,6 +2,7 @@
 
 const Player = require('@models/Player')
 const Dictionary = require('@models/Dictionary')
+const Leaderboard = require('./leaderboard')
 const { GAME_STATES } = require('@config/gameConstants')
 
 class Game {
@@ -22,13 +23,15 @@ class Game {
     this.winner = null
     this.imposter = null
     this.wordLeft = this.players.length
-    this.maxPlayers = 5
+    this.max = maxPlayers
+
+    this.leaderboard = new Leaderboard(this.players)
   }
 
   static getAllGames () {
     return Game.#activeGames.filter(game =>
       game.state === GAME_STATES.WAITING &&
-    game.players.length <= game.maxPlayers)
+    game.players.length <= game.max)
   }
 
   createPlayer (playerId) {
@@ -85,7 +88,7 @@ class Game {
   }
 
   canAddPlayer () {
-    return this.players.length < this.maxPlayers
+    return this.players.length < this.max
   }
 
   // Resets the Game
@@ -131,7 +134,16 @@ class Game {
     this._isFinished = newValue
   }
 
+  win (player) {
+    this.leaderboard.incrementPoints(player, 100)
+  }
+
+  survived (player) {
+    this.leaderboard.incrementPoints(player, 10 * player.votesReceived)
+  }
+
   finishGame () {
+    this.leaderboard.getSorted()
     this.isFinished = true
   }
 

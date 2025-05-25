@@ -171,15 +171,14 @@ module.exports = (io) => {
         return res.status(404).send('Game not found')
       }
       const winner = game.getWinner()
-      const players = game.players || []
       res.render('leaderboard', {
-        winner,
-        leaderboard: players,
-        roundsCompleted: game.roundsComplete
-      })
-    } catch (error) {
-      res.status(500).send('Error displaying leaderboard: ' + error.message)
-    }
+      winner,
+      leaderboard: game.leaderboard.entries, // Send the leaderboard entries
+      roundsCompleted: game.roundsComplete
+    })
+  } catch (error) {
+    res.status(500).send('Error displaying leaderboard: ' + error.message)
+  }
   })
 
   gaming.get('/next-round', (req, res) => {
@@ -193,8 +192,11 @@ module.exports = (io) => {
 
     if (game.isFinished) {
       game.startNewRound()
+       if(game.roundsComplete) accountFunctions.storeGameResult(game)
       return res.redirect(`/gaming/leaderboard/${gameID}`)
     }
+
+   
     return res.redirect('/gaming/waiting')
   })
 

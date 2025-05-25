@@ -20,24 +20,22 @@
   </h2>
 
   <table>
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Player ID</th>
-        <th>Points</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% leaderboard
-            .sort((a, b) => b.points - a.points)
-            .forEach((player, index) => { %>
-      <tr>
-        <td><%= index + 1 %></td>
-        <td><%= player.getId() %></td>
-        <td><%= player.points %></td>
-      </tr>
-      <% }) %>
-    </tbody>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Player ID</th>
+      <th>Points</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% leaderboard.forEach((entry, index) => { %>
+    <tr>
+      <td><%= index + 1 %></td>
+      <td><%= entry.playerId %></td>
+      <td><%= entry.points %></td>
+    </tr>
+    <% }) %>
+  </tbody>
   </table>
   </tbody>
   </table>
