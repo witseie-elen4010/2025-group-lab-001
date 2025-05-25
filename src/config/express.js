@@ -5,6 +5,7 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const { requestLoggerMiddleware } = require('@middleware/requestLogger')
+const Game = require('@models/Game')
 
 const { createServer } = require('node:http')
 const { Server } = require('socket.io')
@@ -16,6 +17,9 @@ const home = require('@routes/home')
 const admin = require('@routes/admin')
 const account = require('@routes/account')
 
+// Game timing
+const proportions = { description: 25, discussion: 75 }
+
 function createApp () {
   const app = express()
   const server = createServer(app)
@@ -23,6 +27,8 @@ function createApp () {
 
   // Add socket middleware for logging
   io.use(socketLoggerMiddleware)
+
+  const activeTimers = {}
 
   // Socket.IO connection
   io.on('connection', (socket) => {
@@ -42,19 +48,62 @@ function createApp () {
 
     socket.on('start game', (gameID) => {
       io.emit('start game', gameID)
+
+      const timeLimit = Game.findGame(gameID).getTimeLimit()
+
+      if (timeLimit !== 0) {
+        let timeLeft = timeLimit * (proportions.description / 100) * 60
+        let timeUpdate = ''
+
+        activeTimers[gameID] = setInterval(() => {
+          timeUpdate = `Time left: ${timeLeft}s`
+
+          io.emit('time update', timeUpdate, gameID)
+          timeLeft--
+
+          if (timeLeft < 0) {
+            clearInterval(activeTimers[gameID])
+            delete activeTimers[gameID]
+            io.emit('start discussion', gameID)
+          }
+        }, 1000)
+      }
     })
 
     socket.on('start discussion', (gameID) => {
       io.emit('start discussion', gameID)
+
+      const timeLimit = Game.findGame(gameID).getTimeLimit()
+
+      if (timeLimit !== 0) {
+        let timeLeft = timeLimit * (proportions.discussion / 100) * 60
+        let timeUpdate = ''
+
+        activeTimers[gameID] = setInterval(() => {
+          timeUpdate = `Time left: ${timeLeft}s`
+
+          io.emit('time update', timeUpdate, gameID)
+          timeLeft--
+
+          if (timeLeft < 0) {
+            clearInterval(activeTimers[gameID])
+            delete activeTimers[gameID]
+            io.emit('start discussion', gameID)
+          }
+        }, 1000)
+      }
     })
 
     socket.on('start voting', (gameID) => {
       io.emit('start voting', gameID)
     })
 
-    // socket.on('next round', () => {
-    //   io.emit('next round')
-    // })
+    socket.on('stop timer', (gameID) => {
+      if (activeTimers[gameID]) {
+        clearInterval(activeTimers[gameID])
+        delete activeTimers[gameID]
+      }
+    })
 
     // Handle disconnection
     socket.on('disconnect', (reason) => {
@@ -88,9 +137,9 @@ function createApp () {
 
   // Configure routes
   app.use('/admin', admin)
-  app.use('/gaming', gaming(io))
+  app.use('/gaming', gaming(io, Game))
 
-  app.use('/home', home(io))
+  app.use('/home', home(io, Game))
   app.use('/', account)
 
   app.use((req, res, next) => {

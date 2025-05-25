@@ -5,6 +5,17 @@ const account = express.Router()
 const accountFunctions = require('@controllers/accountFunctions')
 const querystring = require('querystring')
 
+// let accountFunctionsTmp
+// const initialiseAccountFunctions = async function () {
+//   try {
+//     accountFunctionsTmp = (await import('../controllers/accountFunctions.js')).default
+//   } catch (error) {
+//     console.log('Error loading accountFunctions:', error)
+//   }
+// }
+// initialiseAccountFunctions()
+// const accountFunctions = accountFunctionsTmp
+
 account.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'accounts.html'))
 })

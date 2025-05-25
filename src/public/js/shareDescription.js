@@ -73,11 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 discussButton.addEventListener('click', () => {
+  socket.emit('stop timer', gameInfo.gameId)
   socket.emit('start discussion', gameInfo.gameId)
+  
 })
 
 socket.on('start discussion', (gameId) => {
   if (Number(gameId) === Number(gameInfo.gameId)) {
     window.location.href = '/gaming/chatRoom'
+  }
+})
+
+const timeDisplay = document.getElementById('timeUpdate')
+socket.on('time update', (timeUpdate, gameID) => {
+  if (Number(gameID) === Number(gameInfo.gameId)) {
+  timeDisplay.textContent = timeUpdate
   }
 })

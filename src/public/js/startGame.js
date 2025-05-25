@@ -50,19 +50,19 @@ startButton.addEventListener('click', async () => {
     })
     if (response.ok) {
       // Emit start game event
-      socket.emit('start game', {
-        playerId,
-        gameId: gameInfo.gameId
-      })
-      window.location.href = '/gaming/wordShare'
+      socket.emit('start game',
+        gameInfo.gameId
+      )
     }
   } catch (error) {
     console.error('Error starting game:', error)
   }
 })
 
-socket.on('start game', () => {
-  window.location.href = '/gaming/wordShare'
+socket.on('start game', (gameID) => {
+  if (Number(gameID) === Number(gameInfo.gameId)){
+     window.location.href = '/gaming/wordShare'
+  }
 })
 
 

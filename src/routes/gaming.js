@@ -1,13 +1,12 @@
 'use strict'
 const express = require('express')
 const path = require('path')
-const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
 const accountFunctions = require('@controllers/accountFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 const { verifyToken } = require('@middleware/auth')
 
-module.exports = (io) => {
+module.exports = (io, Game) => {
   const gaming = express.Router()
 
   // Apply JWT verification to all gaming routes except invite
@@ -43,6 +42,13 @@ module.exports = (io) => {
   gaming.get('/players', (req, res) => {
     const game = req.game
     const playerIDs = game.players.map(player => player.getId())
+    res.json({ players: playerIDs })
+  })
+
+  gaming.get('/votingPlayers', (req, res) => {
+    const game = req.game
+    const votingPlayers = votingFunctions.getPlayersCanVote(game.players)
+    const playerIDs = votingPlayers.map(player => player.getId())
     res.json({ players: playerIDs })
   })
 
@@ -87,20 +93,28 @@ module.exports = (io) => {
   })
 
   gaming.post('/voting', (req, res) => {
+    console.log('Received vote request')
     const player = req.player
     const game = req.game
-    let vote = null
+    const vote = req.body.voteValue
+    // let vote = null
     let votedPlayer = null
     if (game.getState() === GAME_STATES.VOTING) {
+      // console.log(`Player ${player.getId()} is voting`)
       if (player.getHasVoted() === false && player.isActive()) {
-        vote = req.body.vote
+        // console.log(`Player ${player.getId()} has not voted yet`)
+        // vote = req.body.vote
         if (vote !== null && vote !== undefined) {
+          // console.log(vote + ' is the vote')
           votedPlayer = game.findPlayer(vote)
           if (votedPlayer !== null && votedPlayer !== undefined) {
             votedPlayer.increaseVotesReceived()
             player.setHasVoted(true)
             game.decreaseNumVotesOustsanding()
+            // console.log(`Player ${player.getId()} voted for ${votedPlayer.getId()}`)
           }
+        } else {
+          console.error('Vote is null or undefined')
         }
       }
     }
@@ -110,6 +124,8 @@ module.exports = (io) => {
         votedOutPlayer.setActive(false)
       }
       votingFunctions.checkGameEnd(game)
+      // console.log(`Player ${votedOutPlayer ? votedOutPlayer.getId() : 'none'} was voted out`)
+      // console.log(`Game state after voting: ${game.getState()}`)
       if (game.getState() === GAME_STATES.SHARE_WORD) {
         io.emit('start game', game.gameID)
       } else if (game.getState() === GAME_STATES.FINISHED) {

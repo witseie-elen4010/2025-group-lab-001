@@ -236,7 +236,7 @@ describe('Gaming Routes', () => {
       await request(app)
         .post('/gaming/voting')
         .set('Cookie', [`token=${testToken}`])
-        .send({ vote: otherPlayer.getId() })
+        .send({ voteValue: otherPlayer.getId() })
         .expect(302)
 
       expect(testPlayer.getHasVoted()).toBe(true)
@@ -252,6 +252,7 @@ describe('Gaming Routes', () => {
       expect(response.type).toBe('text/html')
     })
   })
+
 
   describe('Word Share System', () => {
     test('should serve word share page', async () => {
@@ -284,7 +285,6 @@ describe('Gaming Routes', () => {
         .get('/gaming/chatRoom')
         .set('Cookie', [`token=${testToken}`])
         .expect(200)
-
       expect(response.type).toBe('text/html')
     })
   })

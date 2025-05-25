@@ -106,7 +106,7 @@ describe('Home Routes - Join Page Functionality', () => {
     })
 
     test('canAddPlayer returns false when at capacity', () => {
-      const game = Game.createGame(1, 1, 3)
+      const game = Game.createGame(1, 1, 'word', 3) // Add dictionary parameter
 
       // Add 2 more players to reach capacity (1 host + 2 = 3)
       game.createPlayer(2)

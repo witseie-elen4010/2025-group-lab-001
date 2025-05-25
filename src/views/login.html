@@ -73,6 +73,7 @@
     }s
 </style>
 </head>
+<script src="/scripts/accounts.js" defer></script>
 <body>
   <form action="/login" method="post">
     <h1>Login</h1>
@@ -85,8 +86,10 @@
     <input type="password" placeholder="Enter Password" name="password" required>
 
     <button type="submit">Login</button>
+    <button type="button" onclick="handleAdminLogin()">Admin Login</button>
+    <button type="button" onclick="window.location.href='/createAccount'">Create account</button>
     <a href="/forgotPassword">Forgot Password</a>
   </form>
-  <script src="/scripts/accounts.js"></script>
+ 
 </body>
 </html>

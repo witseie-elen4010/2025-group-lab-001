@@ -3,12 +3,19 @@
 const bcrypt = require('bcrypt')
 const valid = require('validator')
 const nodemailer = require('nodemailer')
+const { sql, getPool } = require('../config/db.js')
 const jwt = require('jsonwebtoken')
 
 // JWT secret key from environment variable with fallback for development
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 let playerIdCounter = 1 // Counter for generating unique player IDs
+
+
+// Function to generate a new player ID for guests
+const generateGuestPlayerId = () => {
+  return playerIdCounter++
+}
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -17,6 +24,7 @@ const transporter = nodemailer.createTransport({
     pass: 'gpda zvoo pjwm azsf'
   }
 })
+
 
 class Account {
   constructor (email, username, password) {
@@ -36,6 +44,31 @@ class OTPAccount {
   }
 }
 
+async function ensureTableExists () {
+  try {
+    const pool = await getPool()
+    await pool.request().query(`
+      IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Accounts')
+      BEGIN
+        CREATE TABLE Accounts (
+          PlayerID INT IDENTITY(1,1) PRIMARY KEY,
+          Email NVARCHAR(100),
+          Username NVARCHAR(100),
+          Password NVARCHAR(MAX)
+        )
+      END
+    `)
+  } catch (err) {
+    console.error('Failed to ensure logs table exists:', err)
+  }
+}
+
+// ensureTableExists()
+async function ensureTableExists2 () {
+  await ensureTableExists()
+}
+ensureTableExists2()
+
 const otpAccounts = []
 
 const hashPassword = async function (password) {
@@ -43,41 +76,84 @@ const hashPassword = async function (password) {
   return await bcrypt.hash(password, saltRounds)
 }
 
-const accounts = []
-const testPassword = '123'
-const newAccount = new Account('test@pf.org', 'testUser', bcrypt.hashSync(testPassword, 10))
-accounts.push(newAccount)
-
-const generateToken = (username, playerId, gameInfo = null) => {
-  const payload = {
-    username,
-    playerId,
-    ...(gameInfo && { gameInfo })
-  }
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
-  return token
-}
-
-const checkValidUser = async function (username, playerId) {
-  return accounts.some(account => account.username === username && account.playerId === playerId)
-}
-
-const createAccount = async function (email, username, password, confirmPassword) {
+async function logToAccountTable (account) {
   try {
-    await checkValidAccount(email, username, password, confirmPassword)
-
-    const hashedPassword = await hashPassword(password)
-    const newAccount = new Account(email, username, hashedPassword)
-    accounts.push(newAccount)
-
-    const result = {
-      username: newAccount.username,
-      playerId: newAccount.playerId
-    }
-    return result
+    const pool = await getPool()
+    await pool.request()
+      .input('email', sql.NVarChar(100), String(account.email)) // Convert to string
+      .input('username', sql.NVarChar(100), String(account.username))
+      .input('password', sql.NVarChar(sql.MAX), String(account.password))
+      .query(`
+        INSERT INTO Accounts (Email, Username, Password)
+        VALUES (@email, @username, @password)
+      `)
   } catch (err) {
+    console.error('Error logging to database:', err)
+  }
+}
+
+const checkValidEmail = function (email) {
+  return valid.isEmail(email)
+}
+
+// const checkEmailAvailable = async function (email) {
+//   return !accounts.some(account => account.email === email)
+// }
+
+const checkEmailAvailable = async function (email) {
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('email', sql.NVarChar(100), email)
+      .query(`
+        SELECT TOP 1 PlayerID
+        FROM Accounts
+        WHERE Email = @email
+      `)
+
+    if (result.recordset.length > 0) {
+      return false
+    } else {
+      return true
+    }
+  } catch (err) {
+    console.error('Error checking email in Database:', err)
     return err
   }
+}
+
+const checkValidUsername = function (username) {
+  return valid.isAlphanumeric(username) && username.length >= 3 && username.length <= 20
+}
+
+// const checkUsernameAvailable = async function (username) {
+//   return !accounts.some(account => account.username === username)
+// }
+
+const checkUsernameAvailable = async function (username) {
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('username', sql.NVarChar(100), username)
+      .query(`
+        SELECT TOP 1 PlayerID
+        FROM Accounts
+        WHERE Username = @username
+      `)
+
+    if (result.recordset.length > 0) {
+      return false
+    } else {
+      return true
+    }
+  } catch (err) {
+    console.error('Error checking username in Database', err)
+    return err
+  }
+}
+
+const checkPasswordConfirmed = function (password, confirmPassword) {
+  return password === confirmPassword
 }
 
 const checkValidAccount = async function (email, username, password, confirmPassword) {
@@ -99,69 +175,213 @@ const checkValidAccount = async function (email, username, password, confirmPass
   return true
 }
 
-const checkValidEmail = function (email) {
-  return valid.isEmail(email)
+// const accounts = []
+
+// Uncomment the following lines when first deploying the application to create a test account
+// const testPassword = '123'
+// const newAccount = new Account('test@pf.org', 'testUser', bcrypt.hashSync(testPassword, 10))
+// // accounts.push(newAccount)
+// if (checkValidAccount(newAccount.email, newAccount.username, testPassword, testPassword)) {
+//   await logToAccountTable(newAccount)
+// }
+
+const generateToken = (username, playerId, gameInfo = null) => {
+  // If no playerId is provided (guest user), generate one
+  if (!playerId) {
+    playerId = generateGuestPlayerId()
+  }
+  const payload = {
+    username,
+    playerId,
+    ...(gameInfo && { gameInfo })
+  }
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
+  return token
 }
 
-const checkEmailAvailable = async function (email) {
-  return !accounts.some(account => account.email === email)
+
+// const checkValidUser = async function (username, playerId) {
+//   return accounts.some(account => account.username === username && account.playerId === playerId)
+// }
+
+const checkValidUser = async function (username, playerID) {
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('username', sql.NVarChar(100), username)
+      .input('playerID', sql.Int, playerID)
+      .query(`
+        SELECT TOP 1 PlayerID
+        FROM Accounts
+        WHERE Username = @username AND PlayerID = @playerID
+      `)
+
+    if (result.recordset.length > 0) {
+      return true
+    } else {
+      return false
+    }
+  } catch (err) {
+    console.error('Error checking username and player ID in database:', err)
+    return err
+  }
 }
 
-const checkValidUsername = function (username) {
-  return valid.isAlphanumeric(username) && username.length >= 3 && username.length <= 20
+const createAccount = async function (email, username, password, confirmPassword) {
+  try {
+    await checkValidAccount(email, username, password, confirmPassword)
+
+    const hashedPassword = await hashPassword(password)
+    const newAccount = new Account(email, username, hashedPassword)
+    // accounts.push(newAccount)
+    await logToAccountTable(newAccount)
+
+    const result = {
+      username: newAccount.username,
+      playerId: newAccount.playerId
+    }
+    return result
+  } catch (err) {
+    return err
+  }
 }
 
-const checkUsernameAvailable = async function (username) {
-  return !accounts.some(account => account.username === username)
-}
+// const loginAccount = async function (email, password) {
+//   let user
+//   for (const account of accounts) {
+//     if (account.email === email) {
+//       user = account
+//       break
+//     }
+//   }
 
-const checkPasswordConfirmed = function (password, confirmPassword) {
-  return password === confirmPassword
-}
+//   if (!user) {
+//     return new Error('Account not found')
+//   }
+
+//   const passwordMatch = await bcrypt.compare(password, user.password)
+//   if (!passwordMatch) {
+//     return new Error('Incorrect password')
+//   }
+
+//   return user
+// }
 
 const loginAccount = async function (email, password) {
-  let user
-  for (const account of accounts) {
-    if (account.email === email) {
-      user = account
-      break
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('email', sql.NVarChar(100), email)
+      .query(`
+        SELECT TOP 1 PlayerID, Username, Password
+        FROM Accounts
+        WHERE Email = @email
+      `)
+    if (result.recordset.length === 0) {
+      return new Error('Account not found')
     }
+    const user = result.recordset[0]
+    const passwordMatch = await bcrypt.compare(password, user.Password)
+    if (!passwordMatch) {
+      return new Error('Incorrect password')
+    }
+    return {
+      username: user.Username,
+      playerId: user.PlayerID
+    }
+  } catch (err) {
+    console.error('Error logging in account:', err)
+    return err
   }
-
-  if (!user) {
-    return new Error('Account not found')
-  }
-
-  const passwordMatch = await bcrypt.compare(password, user.password)
-  if (!passwordMatch) {
-    return new Error('Incorrect password')
-  }
-
-  return user
 }
 
+// const checkIfUser = async function (email) {
+//   const result = accounts.some(account => account.email === email)
+//   if (!result) {
+//     return new Error('Account not found')
+//   }
+//   return result
+// }
 const checkIfUser = async function (email) {
-  const result = accounts.some(account => account.email === email)
-  if (!result) {
-    return new Error('Account not found')
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('email', sql.NVarChar(100), email)
+      .query(`
+        SELECT TOP 1 PlayerID
+        FROM Accounts
+        WHERE Email = @email
+      `)
+
+    if (result.recordset.length > 0) {
+      return true
+    } else {
+      return false
+    }
+  } catch (err) {
+    console.error('Error checking user and player ID in database:', err)
+    return err
   }
-  return result
 }
+
+// const getUsername = async function (email) {
+//   const account = accounts.find(account => account.email === email)
+//   if (!account) {
+//     return new Error('Account not found')
+//   }
+//   return account.username
+// }
 
 const getUsername = async function (email) {
-  const account = accounts.find(account => account.email === email)
-  if (!account) {
-    return new Error('Account not found')
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('email', sql.NVarChar(100), email)
+      .query(`
+        SELECT TOP 1 PlayerID, Username
+        FROM Accounts
+        WHERE Email = @email
+      `)
+
+    if (result.recordset.length > 0) {
+      return result.recordset[0].Username
+    } else {
+      return new Error('Account not found')
+    }
+  } catch (err) {
+    console.error('Error in accessing username from account', err)
+    return err
   }
-  return account.username
 }
 
+// const getEmail = async function (username) {
+//   const account = accounts.find(account => account.username === username)
+//   if (!account) {
+//     return new Error('Account not found')
+//   }
+//   return account.email
+// }
+
 const getEmail = async function (username) {
-  const account = accounts.find(account => account.username === username)
-  if (!account) {
-    return new Error('Account not found')
+  try {
+    const pool = await getPool()
+    const result = await pool.request()
+      .input('username', sql.NVarChar(100), username)
+      .query(`
+        SELECT TOP 1 PlayerID, Email
+        FROM Accounts
+        WHERE Username = @username
+      `)
+
+    if (result.recordset.length > 0) {
+      return result.recordset[0].Email
+    } else {
+      return new Error('Account not found')
+    }
+  } catch (err) {
+    console.error('Error in accessing username from account', err)
+    return err
   }
-  return account.email
 }
 
 const sendOTP = async function (email) {
@@ -234,16 +454,42 @@ const verifyOTP = async function (username, otp) {
   return true
 }
 
+// const resetPassword = async function (username, password, confirmPassword) {
+//   if (!checkPasswordConfirmed(password, confirmPassword)) {
+//     return new Error('Passwords do not match')
+//   }
+//   const account = accounts.find(account => account.username === username)
+//   if (!account) {
+//     return new Error('Account not found')
+//   }
+//   account.password = await hashPassword(password)
+//   return true
+// }
+
 const resetPassword = async function (username, password, confirmPassword) {
   if (!checkPasswordConfirmed(password, confirmPassword)) {
     return new Error('Passwords do not match')
   }
-  const account = accounts.find(account => account.username === username)
-  if (!account) {
-    return new Error('Account not found')
+  try {
+    const pool = await getPool()
+    const hashedPassword = await hashPassword(password)
+    const result = await pool.request()
+      .input('username', sql.NVarChar(100), username)
+      .input('password', sql.NVarChar(sql.MAX), hashedPassword)
+      .query(`
+        UPDATE Accounts
+        SET Password = @password
+        WHERE Username = @username
+      `)
+
+    if (result.rowsAffected[0] === 0) {
+      return new Error('Account not found')
+    }
+    return true
+  } catch (err) {
+    console.error('Error resetting password:', err)
+    return err
   }
-  account.password = await hashPassword(password)
-  return true
 }
 
 const storeGameResult = function (game) {
@@ -337,6 +583,7 @@ module.exports = {
   loginAccount,
   generateToken,
   checkValidUser,
+  generateGuestPlayerId
   checkIfUser,
   getUsername,
   getEmail,
@@ -345,8 +592,8 @@ module.exports = {
   resetPassword,
   generateOTP,
   deleteOldOTPs,
-  storeGameResult,
-  accounts,
   otpAccounts,
-  Account // Add Account class to exports
+  ensureTableExists,
+  storeGameResult,
+  Account
 }

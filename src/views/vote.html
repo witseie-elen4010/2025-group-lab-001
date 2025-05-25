@@ -76,10 +76,13 @@
 <body>
   <h1>Vote to Eliminate a Player</h1>
   <form id="voteForm">
-    <p>Enter the ID of the player you want to vote out:</p>
-    <input type="text" id="playerId" placeholder="Player ID" required>
+    <!-- <p>Enter the ID of the player you want to vote out:</p> -->
+    <!-- <input type="text" id="playerId" placeholder="Player ID" required> -->
+    <p>Select a player to vote out:</p>
+    <div id="playerList"></div>
     <button type="submit">Submit Vote</button>
   </form>
+  
   <div id="errorDisplay"></div> <!-- Container for errors -->
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/scripts/vote.js" defer></script>
