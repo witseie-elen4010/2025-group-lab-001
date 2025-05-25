@@ -104,6 +104,7 @@ function socketLoggerMiddleware (socket, next) {
 }
 
 async function requestLoggerMiddleware (req, res, next) {
+  // Skip static and auth routes
   if (req.url.startsWith('/scripts/') ||
       req.url.endsWith('.html') ||
       req.url.endsWith('.js') ||
@@ -120,6 +121,9 @@ async function requestLoggerMiddleware (req, res, next) {
 
   let data = req.body || {}
   if (typeof data !== 'object' || Array.isArray(data)) data = {}
+
+  // Initialize cookies if undefined
+  req.cookies = req.cookies || {}
 
   const token = req.cookies.token
   let playerId = 'unknown'
@@ -141,13 +145,17 @@ async function requestLoggerMiddleware (req, res, next) {
   if (action !== 'join game' && (isEmpty(data) || !details)) return next()
 
   const logEntry = {
-    players: playerId,
+    players: String(playerId),
     action,
     details,
     timestamp: new Date().toISOString()
   }
 
-  await logToDatabase(logEntry)
+  try {
+    await logToDatabase(logEntry)
+  } catch (err) {
+    console.error('Error logging to database:', err)
+  }
   next()
 }
 
