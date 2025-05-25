@@ -9,7 +9,7 @@ class Game {
   static #gameCounter = 0
   static #activeGames = []
 
-  constructor (hostId, totalRounds = 1, dictionaryType = 'word', maxPlayers = 5) {
+  constructor (hostId, totalRounds = 1, dictionaryType = 'word', timeLimit = 0, maxPlayers = 5) {
     this.gameID = Game.#gameCounter++
     this.players = []
     this.wordPair = Dictionary.getWordPair(dictionaryType)
@@ -26,6 +26,7 @@ class Game {
     this.max = maxPlayers
 
     this.leaderboard = new Leaderboard(this.players)
+    this.timeLimit = timeLimit
   }
 
   static getAllGames () {
@@ -176,6 +177,10 @@ class Game {
     this.players.forEach(player => {
       player.hasSharedWord = false
     })
+  }
+
+  getTimeLimit () {
+    return this.timeLimit
   }
 }
 module.exports = Game

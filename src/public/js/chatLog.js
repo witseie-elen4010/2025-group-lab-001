@@ -81,6 +81,7 @@ socket.on('chat message', (msg, gameID) => {
 })
 
 votingButton.addEventListener('click', () => {
+  socket.emit('stop timer', gameInfo.gameId)
     socket.emit('start voting', gameInfo?.gameId)
   })
 
@@ -89,3 +90,10 @@ votingButton.addEventListener('click', () => {
     window.location.href = '/gaming/setUpVoting'
     }
   })
+
+  const timeDisplay = document.getElementById('timeUpdate')
+socket.on('time update', (timeUpdate, gameID) => {
+  if (Number(gameID) === Number(gameInfo.gameId)) {
+  timeDisplay.textContent = timeUpdate
+  }
+})

@@ -52,6 +52,7 @@ if (gameInfo?.isSpectator === 'true') {
       window.location.href = '/gaming/next-round'
     }
   })
+
 })
 
 const createVoteRadioButtons = async function (){

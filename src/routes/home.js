@@ -1,7 +1,6 @@
 'use strict'
 const path = require('path')
 const express = require('express')
-const Game = require('@models/Game')
 const { verifyToken } = require('@middleware/auth')
 const accountFunctions = require('@controllers/accountFunctions')
 
@@ -16,7 +15,7 @@ const accountFunctions = require('@controllers/accountFunctions')
 // initialiseAccountFunctions()
 // const accountFunctions = accountFunctionsTmp
 
-module.exports = (io) => {
+module.exports = (io, Game) => {
   const home = express.Router()
 
   home.use((req, res, next) => {
@@ -38,10 +37,11 @@ module.exports = (io) => {
   home.post('/createGame', (req, res) => {
     const totalRounds = req.body.totalRounds
     const dictionaryType = req.body.dictionaryType
+    const timeLimit = req.body.timeLimit
     const currentPlayerID = req.user.playerId
-    console.log(totalRounds)
+
     try {
-      const newGame = Game.createGame(currentPlayerID, Number(totalRounds), String(dictionaryType))
+      const newGame = Game.createGame(currentPlayerID, Number(totalRounds), String(dictionaryType), Number(timeLimit))
 
       // Update JWT with game info
       const gameInfo = {
