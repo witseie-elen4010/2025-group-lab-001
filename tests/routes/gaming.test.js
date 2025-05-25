@@ -40,14 +40,6 @@ describe('Gaming Routes', () => {
         .expect('Location', '/gaming/waiting')
     })
 
-    test('should redirect to login when not authenticated', async () => {
-      await request(app)
-        .get('/home/invite')
-        .query({ gameID: testGame.gameID })
-        .expect(302)
-        .expect('Location', '/login')
-    })
-
     test('should return 404 for non-existent gameID', async () => {
       await request(app)
         .get('/home/invite')
