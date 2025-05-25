@@ -3,6 +3,7 @@ const express = require('express')
 const path = require('path')
 const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
+const accountFunctions = require('@controllers/accountFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 const { verifyToken } = require('@middleware/auth')
 
@@ -171,10 +172,9 @@ module.exports = (io) => {
         return res.status(404).send('Game not found')
       }
       const winner = game.getWinner()
-      const players = game.players || []
       res.render('leaderboard', {
         winner,
-        leaderboard: players,
+        leaderboard: game.leaderboard.entries, // Send the leaderboard entries
         roundsCompleted: game.roundsComplete
       })
     } catch (error) {
@@ -192,8 +192,10 @@ module.exports = (io) => {
 
     if (game.isFinished) {
       game.startNewRound()
+      if (game.roundsComplete) accountFunctions.storeGameResult(game)
       return res.redirect(`/gaming/leaderboard/${gameID}`)
     }
+
     return res.redirect('/gaming/waiting')
   })
 

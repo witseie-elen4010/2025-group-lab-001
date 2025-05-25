@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Game Stats</title>
+  <style>
+    @font-face {
+      font-family: 'body';
+      src: url('/fonts/body.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    body {
+      font-family: 'body';
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .total-points {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+    .no-games {
+      color: #777;
+      font-style: italic;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      margin: 10px 5px;
+      background-color: #2196F3;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #0b7dda;
+    }
+    .global-button {
+      background-color: #ff9800;
+    }
+    .global-button:hover {
+      background-color: #e68a00;
+    }
+    .error {
+      color: #d32f2f;
+      padding: 10px;
+      background-color: #ffebee;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    #globalLeaderboard {
+      display: none;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px dotted #ddd;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stats-header">
+    <h1>Game Stats for <%= username || 'Player' %></h1>
+    <div class="total-points">Total Points: <%= rankedPoints || 0 %></div>
+  </div>
+  
+  <h2>Recent Games</h2>
+  
+  <% if (pastGames && pastGames.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Game ID</th>
+          <th>Rounds</th>
+          <th>Your Score</th>
+          <th>Position</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pastGames.forEach(game => { 
+          try {
+            // Safety checks for all properties
+            const gameLeaderboard = game.leaderboard || [];
+            const userId = user && user.playerId;
+            
+            // Find this user's entry in the leaderboard
+            const userEntry = Array.isArray(gameLeaderboard) ? 
+              gameLeaderboard.find(entry => entry && entry.playerId === userId) : null;
+              
+            const userPosition = Array.isArray(gameLeaderboard) ? 
+              gameLeaderboard.findIndex(entry => entry && entry.playerId === userId) + 1 : 'N/A';
+              
+            const winnerEntry = Array.isArray(gameLeaderboard) && gameLeaderboard.length > 0 ? 
+              gameLeaderboard[0] : {};
+              
+            const winnerName = winnerEntry.username || `Player ${winnerEntry.playerId || 'Unknown'}`;
+            
+            // Format date safely
+            const gameDate = game.date ? 
+              new Date(game.date).toLocaleDateString() : 'Unknown date';
+        %>
+          <tr>
+            <td><%= gameDate %></td>
+            <td><%= game.gameId || 'Unknown' %></td>
+            <td><%= game.totalRounds || '-' %></td>
+            <td><%= userEntry && userEntry.points !== undefined ? userEntry.points : 0 %></td>
+            <td><%= userPosition %></td>
+            <td><%= winnerName %></td>
+          </tr>
+        <% } catch (error) { %>
+          <tr>
+            <td colspan="6" class="error">Error displaying game: <%= error.message %></td>
+          </tr>
+        <% }
+        }); %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p class="no-games">You haven't played any games yet!</p>
+  <% } %>
+  
+  <div class="button-container">
+    <a href="/home" class="button">Back to Home</a>
+    <button id="toggleLeaderboard" class="button global-button">Show Global Leaderboard</button>
+  </div>
+  
+  <div id="globalLeaderboard">
+    <h2>Global Leaderboard</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Total Points</th>
+        </tr>
+      </thead>
+      <tbody id="globalLeaderboardBody">
+        <tr>
+          <td colspan="3">Loading global leaderboard...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <script>
+    document.getElementById('toggleLeaderboard').addEventListener('click', function() {
+      const leaderboardDiv = document.getElementById('globalLeaderboard');
+      const button = document.getElementById('toggleLeaderboard');
+      
+      if (leaderboardDiv.style.display === 'block') {
+        leaderboardDiv.style.display = 'none';
+        button.textContent = 'Show Global Leaderboard';
+      } else {
+        leaderboardDiv.style.display = 'block';
+        button.textContent = 'Hide Global Leaderboard';
+        
+        // Fetch the global leaderboard data
+        fetch('/home/global-leaderboard', {
+          credentials: 'same-origin'
+        })
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('globalLeaderboardBody');
+            tbody.innerHTML = '';
+            
+            if (data.leaderboard && data.leaderboard.length > 0) {
+              data.leaderboard.forEach((player, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                  <td>${index + 1}</td>
+                  <td>${player.username || 'Unknown'}</td>
+                  <td>${player.points || 0}</td>
+                `;
+                tbody.appendChild(row);
+              });
+            } else {
+              tbody.innerHTML = '<tr><td colspan="3">No players found</td></tr>';
+            }
+          })
+          .catch(error => {
+            const tbody = document.getElementById('globalLeaderboardBody');
+            tbody.innerHTML = `<tr><td colspan="3">Error loading leaderboard: ${error.message}</td></tr>`;
+          });
+      }
+    });
+  </script>
+</body>
+</html>

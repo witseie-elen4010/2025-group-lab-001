@@ -2,16 +2,17 @@
 
 const Player = require('@models/Player')
 const Dictionary = require('@models/Dictionary')
+const Leaderboard = require('./leaderboard')
 const { GAME_STATES } = require('@config/gameConstants')
 
 class Game {
   static #gameCounter = 0
   static #activeGames = []
 
-  constructor (hostId, totalRounds = 1, maxPlayers = 5) {
+  constructor (hostId, totalRounds = 1, dictionaryType = 'word', maxPlayers = 5) {
     this.gameID = Game.#gameCounter++
     this.players = []
-    this.wordPair = Dictionary.getWordPair()
+    this.wordPair = Dictionary.getWordPair(dictionaryType)
     this.host = this.createPlayer(hostId)
     this.totalRounds = totalRounds // Total number of rounds for the game
     this.currentRound = 1
@@ -22,13 +23,15 @@ class Game {
     this.winner = null
     this.imposter = null
     this.wordLeft = this.players.length
-    this.maxPlayers = 5
+    this.max = maxPlayers
+
+    this.leaderboard = new Leaderboard(this.players)
   }
 
   static getAllGames () {
     return Game.#activeGames.filter(game =>
       game.state === GAME_STATES.WAITING &&
-    game.players.length <= game.maxPlayers)
+    game.players.length <= game.max)
   }
 
   createPlayer (playerId) {
@@ -76,15 +79,15 @@ class Game {
     this.state = newState
   }
 
-  static createGame (hostId, totalRounds = 1, maxPlayers = 5) {
-    const game = new Game(hostId, totalRounds, maxPlayers)
+  static createGame (hostId, totalRounds = 1, dictionaryType = 'word', maxPlayers = 5) {
+    const game = new Game(hostId, totalRounds, dictionaryType, maxPlayers)
     game.reassignRoles()
     Game.#activeGames.push(game)
     return game
   }
 
   canAddPlayer () {
-    return this.players.length < this.maxPlayers
+    return this.players.length < this.max
   }
 
   // Resets the Game
@@ -130,7 +133,16 @@ class Game {
     this._isFinished = newValue
   }
 
+  win (player) {
+    this.leaderboard.incrementPoints(player, 100)
+  }
+
+  survived (player) {
+    this.leaderboard.incrementPoints(player, 10 * player.votesReceived)
+  }
+
   finishGame () {
+    this.leaderboard.getSorted()
     this.isFinished = true
   }
 

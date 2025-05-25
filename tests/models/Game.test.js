@@ -52,6 +52,11 @@ describe('Game Management', () => {
       const game = Game.createGame(1)
       expect(game.host.getWord()).toBe(game.wordPair.imposter)
     })
+
+    test('should assign prompt to player if host chose for game to contain prompts', () => {
+      const game = Game.createGame(1, 3, 'prompt')
+      expect(String(game.host.getWord()).includes('you ')).toBeTruthy()
+    })
   })
 
   // Unique Player ID generation testing (necessary for the copy link functionality)
@@ -178,6 +183,39 @@ describe('Game Management', () => {
 
       expect(game.roundsComplete).toBe(true) // Game should remain completed
       expect(currentRoles).toEqual(previousRoles) // Roles should not change
+    })
+  })
+
+  describe('Player Points Management', () => {
+    test('should award points correctly for winning', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.win(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(100)
+    })
+
+    // Test for survived functionality
+    test('should award points correctly for surviving based on votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+      player.increaseVotesReceived() // Simulate receiving 1 vote
+      player.increaseVotesReceived() // Simulate receiving another vote
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(20) // 10 points per vote received
+    })
+
+    // Test for survived functionality with no votes
+    test('should not award points for surviving with no votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(0) // No points awarded if no votes received
     })
   })
 })

@@ -29,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const tableRows = logs.map(log => `
         <tr>
           <td>${formatTimestamp(log.timestamp)}</td>
-          <td>${log.players || 'unknown'}</td>
-          <td>${log.action || 'unknown'}</td>
-          <td>${log.details || ''}</td>
+          <td>${log.Players || 'unknown'}</td>
+          <td>${log.Action || 'unknown'}</td>
+          <td>${log.Details || ''}</td>
         </tr>
       `).join('')
 
