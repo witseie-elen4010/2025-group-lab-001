@@ -5,6 +5,17 @@ const Game = require('@models/Game')
 const { verifyToken } = require('@middleware/auth')
 const accountFunctions = require('@controllers/accountFunctions')
 
+// let accountFunctionsTmp
+// const initialiseAccountFunctions = async function () {
+//   try {
+//     accountFunctionsTmp = await import('../controllers/accountFunctions.js')
+//   } catch (error) {
+//     console.log('Error loading accountFunctions:', error)
+//   }
+// }
+// initialiseAccountFunctions()
+// const accountFunctions = accountFunctionsTmp
+
 module.exports = (io) => {
   const home = express.Router()
 
@@ -25,11 +36,12 @@ module.exports = (io) => {
   })
 
   home.post('/createGame', (req, res) => {
-    const { totalRounds } = req.body
+    const totalRounds = req.body.totalRounds
+    const dictionaryType = req.body.dictionaryType
     const currentPlayerID = req.user.playerId
-
+    console.log(totalRounds)
     try {
-      const newGame = Game.createGame(currentPlayerID, totalRounds)
+      const newGame = Game.createGame(currentPlayerID, Number(totalRounds), String(dictionaryType))
 
       // Update JWT with game info
       const gameInfo = {
@@ -109,7 +121,7 @@ module.exports = (io) => {
       const lobbies = openGames.map(game => ({
         id: game.gameID,
         playerCount: game.players.length,
-        maxPlayers: game.maxPlayers
+        maxPlayers: game.max
       }))
       res.json({ lobbies })
     } catch (error) {
@@ -173,6 +185,49 @@ module.exports = (io) => {
       res.redirect('/gaming/waiting')
     } else {
       res.status(404).sendFile(path.join(__dirname, '..', 'views', 'gameError.html'))
+    }
+  })
+
+  home.get('/stats', (req, res) => {
+    // const playerId = req.user.playerId
+    const account = accountFunctions.accounts.find(acc => acc.username === req.user.username)
+
+    if (!account) {
+      return res.status(404).send('User account not found')
+    }
+
+    // Initialize pastGames if it doesn't exist
+    if (!account.pastGames) account.pastGames = []
+
+    try {
+      return res.render('userStats', {
+        username: account.username,
+        rankedPoints: account.rankedPoints || 0,
+        pastGames: account.pastGames,
+        user: req.user
+      })
+    } catch (error) {
+      return res.status(500).send('Error displaying user stats: ' + error.message)
+    }
+  })
+
+  home.get('/global-leaderboard', (req, res) => {
+    try {
+      // Get all accounts, sort by ranked points
+      const rankedAccounts = accountFunctions.accounts
+        .filter(account => account && account.username) // Ensure account and username exist
+        .map(account => ({
+          username: account.username || 'Unknown', // Provide fallback for username
+          points: account.rankedPoints || 0
+        }))
+        .sort((a, b) => b.points - a.points)
+
+      console.log('Global leaderboard requested, returning:', rankedAccounts)
+
+      res.json({ leaderboard: rankedAccounts })
+    } catch (error) {
+      console.error('Error fetching global leaderboard:', error)
+      res.status(500).json({ error: error.message })
     }
   })
 

@@ -52,6 +52,11 @@ describe('Game Management', () => {
       const game = Game.createGame(1)
       expect(game.host.getWord()).toBe(game.wordPair.imposter)
     })
+
+    test('should assign prompt to player if host chose for game to contain prompts', () => {
+      const game = Game.createGame(1, 3, 'prompt')
+      expect(String(game.host.getWord()).includes('you ')).toBeTruthy()
+    })
   })
 
   // Unique Player ID generation testing (necessary for the copy link functionality)
@@ -86,29 +91,51 @@ describe('Game Management', () => {
   })
 
   describe('Game Round Management', () => {
-    // test('should mark the game as finished after the last round', () => {
-    //  const game = Game.createGame(1, 2) // Create a game with 2 rounds
-    //  game.players.push(new Player(2, 'civilian'))
-    //  game.players.push(new Player(3, 'civilian'))
-    //
-    //  game.startNewRound() // Round 2
-    //  game.startNewRound() // Exceeds total rounds
-    //
-    //  expect(game.currentRound).toBe(3)
-    //  expect(game.isFinished).toBe(true)
+    test('should mark the game as finished after the last round', () => {
+      const game = Game.createGame(1, 2) // Create a game with 2 rounds
+      game.players.push(new Player(2, 'civilian'))
+      game.players.push(new Player(3, 'civilian'))
 
-    // test('should reset player roles when starting a new round', () => {
-    //  const game = Game.createGame(1, 2)
-    //  game.players.push(new Player(2, 'civilian'))
-    //  game.players.push(new Player(3, 'civilian'))
-    //
-    //  const initialRoles = game.players.map(player => player.getRole())
-    //  game.startNewRound()
-    //  const newRoles = game.players.map(player => player.getRole())
-    //
-    //  // At least one role should change
-    //  expect(initialRoles).not.toEqual(newRoles)
-    // })
+      game.startNewRound() // Round 2
+      game.startNewRound() // Exceeds total rounds
+
+      expect(game.currentRound).toBe(2) // round counter does not incremenet past 2
+      expect(game.roundsComplete).toBe(true)
+    })
+
+    test('should reset player roles when starting a new round', () => {
+      const numRounds = 100
+      const game = Game.createGame(1, numRounds, 5)
+      game.players.push(new Player(2, 'civilian'))
+      game.players.push(new Player(3, 'civilian'))
+      game.players.push(new Player(4, 'civilian'))
+      game.players.push(new Player(5, 'civilian'))
+
+      const initialRoles = game.players.map(player => player.getRole())
+      let rolesChanged = false
+
+      // yeah lol not ideal but it works. There is a very small chance of this test failing.
+      // NOTE: if test fails, either push more players as shown above or increase numRounds or both
+
+      for (let i = 0; i < numRounds; i++) {
+        game.startNewRound()
+        const newRoles = game.players.map(player => player.getRole())
+        if (!arraysEqual(initialRoles, newRoles)) {
+          rolesChanged = true
+          break
+        }
+      }
+
+      expect(rolesChanged).toBe(true)
+    })
+
+    // dumb helper function
+    function arraysEqual (a, b) {
+      return Array.isArray(a) &&
+    Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((val, idx) => val === b[idx])
+    }
 
     test('should not start new round if game is finished', () => {
       const game = Game.createGame(1, 1)
@@ -120,7 +147,7 @@ describe('Game Management', () => {
       game.startNewRound() // Should not increment round
 
       expect(game.currentRound).toBe(finalRound)
-      expect(game.isFinished).toBe(true)
+      expect(game.roundsComplete).toBe(true)
     })
   })
 
@@ -131,17 +158,17 @@ describe('Game Management', () => {
       expect(game1.gameID).toBe(0)
       expect(game2.gameID).toBe(1)
     })
-    // test('should mark the game as finished after the last round', () => {
-    //   const game = Game.createGame(1, 2) // Create a game with 2 rounds
-    //   game.players.push(new Player(2, 'civilian'))
-    //   game.players.push(new Player(3, 'civilian'))
-    //
-    //   game.startNewRound() // Round 2
-    //   game.startNewRound() // Exceeds total rounds
-    //
-    //   expect(game.currentRound).toBe(3) // Round counter increments
-    //   expect(game.isFinished).toBe(true) // Game should be marked as finished
-    // })
+    test('should mark rounds as completed after the last round', () => {
+      const game = Game.createGame(1, 2) // Create a game with 2 rounds
+      game.players.push(new Player(2, 'civilian'))
+      game.players.push(new Player(3, 'civilian'))
+
+      game.startNewRound() // Round 2
+      game.startNewRound() // Exceeds total rounds
+
+      expect(game.currentRound).toBe(2) // Round counter does not incremeent past totalRounds
+      expect(game.roundsComplete).toBe(true) // Game should be marked as finished
+    })
 
     test('should not reassign roles if the game is finished', () => {
       const game = Game.createGame(1, 1) // Create a game with 1 round
@@ -151,11 +178,44 @@ describe('Game Management', () => {
       game.startNewRound() // Round 2 (game finishes here)
       const previousRoles = game.players.map(player => player.getRole())
 
-      game.startNewRound() // Attempt to start a new round after the game is finished
+      game.startNewRound() // Attempt to start a new round after the rounds have been completed
       const currentRoles = game.players.map(player => player.getRole())
 
-      expect(game.isFinished).toBe(true) // Game should remain finished
+      expect(game.roundsComplete).toBe(true) // Game should remain completed
       expect(currentRoles).toEqual(previousRoles) // Roles should not change
+    })
+  })
+
+  describe('Player Points Management', () => {
+    test('should award points correctly for winning', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.win(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(100)
+    })
+
+    // Test for survived functionality
+    test('should award points correctly for surviving based on votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+      player.increaseVotesReceived() // Simulate receiving 1 vote
+      player.increaseVotesReceived() // Simulate receiving another vote
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(20) // 10 points per vote received
+    })
+
+    // Test for survived functionality with no votes
+    test('should not award points for surviving with no votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(0) // No points awarded if no votes received
     })
   })
 })

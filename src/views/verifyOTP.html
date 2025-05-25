@@ -24,36 +24,44 @@
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
     }
-    
-    /* Add font styling for buttons */
     button {
       font-family: 'body';
       font-size: 1em; /* Maintain consistent text size */
     }
-
-      input {
+    input {
       font-family: 'body';
       font-size: 1em;
     }
-    
-    
     ::placeholder {
       font-family: 'body';
       opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }
 </style>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounts</title>
+    <title>Verify OTP</title>
 </head>
 
 <body>
-    <h1>Plastic Flamingoes</h1>
-    <p>Sign Up or Log in</p>
-    <button id="create-account-btn">Create Account</button>
-    <button id="login-btn">Login</button>
-    <script src="/scripts/accounts.js" defer></script>
+    <h1>Verify OTP</h1>
+    <p>Enter your OTP</p>
+    <hr>
+    <form action="/verifyOTP" method="post">
+        <label for="otp"><b>OTP</b></label>
+        <input type="text" placeholder="Enter OTP" name="otp" required>
+        <button type="submit">Verify OTP</button>
+    </form>
+    <script src="/scripts/accounts.js"></script>
+    <script>    
+        const resendOTPlink = function() {
+            const resendOTPBtn = document.createElement('a');
+            resendOTPBtn.href = '/resendOTP';
+            resendOTPBtn.innerText = 'Resend OTP';
+            document.body.appendChild(resendOTPBtn);
+        }
+        setTimeout(resendOTPlink, 10000); // Resend OTP link will appear after 10 seconds
+    </script>
 </body>
 
 </html>

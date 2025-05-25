@@ -59,7 +59,7 @@ const checkGameEnd = function (game) {
   for (let i = 0; i < game.players.length; i++) {
     const player = game.players[i]
     if (game.players[i].isActive()) {
-      player.survived() // award points
+      game.survived(player) // award points
 
       imposterCount += game.players[i].getRole() === ROLES.IMPOSTER ? 1 : 0
       civilianCount += game.players[i].getRole() === ROLES.CIVILIAN ? 1 : 0
@@ -85,7 +85,7 @@ const checkGameEnd = function (game) {
     game.players.forEach(player => {
       if (player.role === ROLES.CIVILIAN) {
         if (player.isActive()) {
-          player.win()
+          game.win(player)
         }
       }
     })
@@ -97,7 +97,7 @@ const checkGameEnd = function (game) {
 
     game.players.forEach(player => {
       if (player.role === ROLES.IMPOSTER) {
-        player.win()
+        game.win(player)
       }
     })
   } else {

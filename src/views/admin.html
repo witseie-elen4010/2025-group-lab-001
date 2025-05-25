@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin Logs</title>
@@ -23,19 +24,15 @@
 </head>
 <body>
     <h1>Request Logs</h1>
-    <button id="refresh">Refresh Logs</button>
-    <table>
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Players</th>
-                <th>Action</th>
-                <th>Details</th>
-            </tr>
-        </thead>
-        <tbody id="logs-table">
-        </tbody>
+    <table id="logs-table">
+      <tr>
+        <th>Time</th>
+        <th>Player</th>
+        <th>Action</th>
+        <th>Details</th>
+      </tr>
     </table>
+    <button id="refresh">Refresh Logs</button>
     <script src="/scripts/admin.js"></script>
 </body>
 </html>

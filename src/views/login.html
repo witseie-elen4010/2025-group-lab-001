@@ -4,6 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login</title>
+  <style>
+    @font-face {
+      font-family: 'body';
+      src: url('/fonts/body.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    body {
+      font-family: 'body';
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    button {
+      font-family: 'body';
+      font-size: 1em; /* Maintain consistent text size */
+    }
+    input {
+      font-family: 'body';
+      font-size: 1em;
+    }
+    ::placeholder {
+      font-family: 'body';
+      opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }s
+</style>
 </head>
 <body>
   <form action="/login" method="post">
@@ -17,16 +54,8 @@
     <input type="password" placeholder="Enter Password" name="password" required>
 
     <button type="submit">Login</button>
+    <a href="/forgotPassword">Forgot Password</a>
   </form>
-  <script>
-    const params = new URLSearchParams(window.location.search)
-    const error = params.get('error')
-    if (error) {
-      const msg = document.createElement('p')
-      msg.innerText = error
-      msg.style.color = 'red'
-      document.body.insertBefore(msg, document.body.firstChild)
-    }
-  </script>
+  <script src="/scripts/accounts.js"></script>
 </body>
 </html>
