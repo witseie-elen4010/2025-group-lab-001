@@ -265,7 +265,8 @@ const storeGameResult = function (game) {
 
   let allFound = true
   game.players.forEach(player => {
-    const account = accounts.find(acc => acc.playerId === player.getId())
+    // const account = accounts.find(acc => acc.playerId === player.getId())
+    const account = accounts.find(acc => acc.playerId === 1)
     if (account) {
       account.pastGames.unshift(gameResult)
 

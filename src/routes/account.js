@@ -4,8 +4,6 @@ const path = require('path')
 const account = express.Router()
 const accountFunctions = require('@controllers/accountFunctions')
 const querystring = require('querystring')
-const { verifyToken } = require('@middleware/auth')
-// const { verifyToken } = require('@middleware/auth')
 
 account.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'accounts.html'))
@@ -21,7 +19,7 @@ account.post('/createAccount', async (req, res) => {
     const result = await accountFunctions.createAccount(email, username, password, confirmPassword)
     if (result instanceof Error) {
       const qs = querystring.stringify({ error: result.message })
-      return res.redirect(`/createAccount?${qs}`)
+      return res.redirect(`/account/createAccount?${qs}`)
     } else {
       const token = accountFunctions.generateToken(result.username, result.playerId)
       res.cookie('token', token, {
@@ -33,7 +31,7 @@ account.post('/createAccount', async (req, res) => {
     }
   } catch (error) {
     const qs = querystring.stringify({ error: 'Internal server error' })
-    return res.redirect(`createAccount?${qs}`)
+    return res.redirect(`/account/createAccount?${qs}`)
   }
 })
 
@@ -47,7 +45,7 @@ account.post('/login', async (req, res) => {
     const loginResult = await accountFunctions.loginAccount(email, password)
     if (loginResult instanceof Error) {
       const errorMsg = encodeURIComponent(loginResult.message)
-      return res.redirect(`/login?error=${errorMsg}`)
+      return res.redirect(`/account/login?error=${errorMsg}`)
     } else {
       const token = accountFunctions.generateToken(loginResult.username, loginResult.playerId)
       res.cookie('token', token, {
@@ -169,28 +167,6 @@ account.post('/resetPassword', async (req, res) => {
 
 account.get('/passwordReset', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'passwordReset.html'))
-})
-
-account.get('/stats', verifyToken, (req, res) => {
-  console.log('You have redirected successfully')
-  const playerId = req.user.playerId
-
-  const account = accountFunctions.accounts.find(acc => acc.playerId === playerId)
-
-  if (!account) {
-    return res.status(404).send('User account not found')
-  }
-  if (!account.pastGames) account.pastGames = []
-  try {
-    return res.render('userStats', {
-      username: account.username,
-      rankedPoints: account.rankedPoints,
-      pastGames: account.pastGames,
-      user: req.user
-    })
-  } catch (error) {
-    return res.status(500).send('Error displaying user stats: ' + error.message)
-  }
 })
 
 module.exports = account

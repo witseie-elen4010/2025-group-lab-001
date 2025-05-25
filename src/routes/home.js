@@ -170,5 +170,45 @@ module.exports = (io) => {
     }
   })
 
+  home.get('/stats', (req, res) => {
+    const playerId = req.user.playerId
+    // const account = accountFunctions.accounts.find(acc => acc.playerId === playerId)
+    const account = accountFunctions.accounts.find(acc => acc.playerId === 1)
+
+    if (!account) {
+      return res.status(404).send('User account not found')
+    }
+    if (!account.pastGames) account.pastGames = []
+    try {
+      return res.render('userStats', {
+        username: account.username,
+        rankedPoints: account.rankedPoints,
+        pastGames: account.pastGames,
+        user: req.user
+      })
+    } catch (error) {
+      return res.status(500).send('Error displaying user stats: ' + error.message)
+    }
+  })
+
+  home.get('/global-leaderboard', (req, res) => {
+    try {
+    // Get all accounts, sort by ranked points
+      const rankedAccounts = accountFunctions.accounts
+        .map(account => ({
+          username: account.username,
+          points: account.rankedPoints || 0
+        }))
+        .sort((a, b) => b.points - a.points)
+
+      console.log('Global leaderboard requested, returning:', rankedAccounts)
+
+      res.json({ leaderboard: rankedAccounts })
+    } catch (error) {
+      console.error('Error fetching global leaderboard:', error)
+      res.status(500).json({ error: error.message })
+    }
+  })
+
   return home
 }
