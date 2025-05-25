@@ -253,7 +253,6 @@ describe('Gaming Routes', () => {
     })
   })
 
-
   describe('Word Share System', () => {
     test('should serve word share page', async () => {
       testGame.setState(GAME_STATES.SHARE_WORD)
