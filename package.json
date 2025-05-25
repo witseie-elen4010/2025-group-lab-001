@@ -48,6 +48,7 @@
     "express": "5.1.0",
     "jsonwebtoken": "9.0.2",
     "module-alias": "^2.2.3",
+    "mssql": "11.0.1",
     "nodemailer": "^7.0.3",
     "socket.io": "^4.8.1",
     "validator": "^13.15.0"
@@ -67,7 +68,8 @@
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/app.js",
-      "!src/config/gameConstants.js"
+      "!src/config/gameConstants.js",
+      "!src/public/**/*"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": [
@@ -93,7 +95,13 @@
       "^@controllers/(.*)$": "<rootDir>/src/controllers/$1",
       "^@middleware/(.*)$": "<rootDir>/src/middleware/$1"
     },
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup/jest.setup.js"
+    ],
     "testEnvironment": "node",
-    "verbose": true
+    "verbose": true,
+    "forceExit": true,
+    "detectOpenHandles": true,
+    "testTimeout": 10000
   }
 }
