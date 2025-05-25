@@ -236,7 +236,7 @@ describe('Gaming Routes', () => {
       await request(app)
         .post('/gaming/voting')
         .set('Cookie', [`token=${testToken}`])
-        .send({ vote: otherPlayer.getId() })
+        .send({ voteValue: otherPlayer.getId() })
         .expect(302)
 
       expect(testPlayer.getHasVoted()).toBe(true)
