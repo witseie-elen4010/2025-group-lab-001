@@ -19,16 +19,40 @@
     
     body {
       font-family: 'body';
+      background-color: #FFDBDB;
     }
     
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
     }
     
-    /* Add font styling for buttons */
+    /* Replace default buttons with custom button sprite */
     button {
-      font-family: 'body';
-      font-size: 1em; /* Maintain consistent text size */
+      background-image: url('/assets/button b 1.png');
+      background-size: 100% 100%; /* Cover the entire button */
+      background-repeat: no-repeat;
+      background-color: transparent; /* Remove default background */
+      border: none; /* Remove default border */
+      font-family: 'heading';
+      font-size: 1em;
+      color: #000; /* Text color - adjust if needed */
+      cursor: pointer;
+      text-align: bottom;
+      min-width: 120px; /* Set a minimum width for the button */
+      min-height: 40px; /* Set a minimum height for the button */
+      margin-top: 0px; /* Add space above the button to move it down */
+      vertical-align: middle; /* Changed from middle to bottom alignment */
+      position: relative; /* Enable fine positioning */
+      top: 20px; /* Move button down slightly relative to its normal position */
+    }
+    
+    /* Optional: Add hover and active effects */
+    button:hover {
+      transform: scale(1.05);
+    }
+    
+    button:active {
+      transform: scale(0.95);
     }
 
       input {
@@ -40,6 +64,7 @@
     ::placeholder {
       font-family: 'body';
       opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }
 </style>
 
 <head>
