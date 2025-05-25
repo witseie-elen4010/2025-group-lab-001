@@ -21,8 +21,14 @@ admin.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'admin.html'))
 })
 
-admin.get('/logs', (req, res) => {
-  res.json(getRequestLogs())
+admin.get('/logs', async (req, res) => {
+  try {
+    const logs = await getRequestLogs()
+    res.json(logs)
+  } catch (error) {
+    console.error('Error in /admin/logs route:', error)
+    res.status(500).json({ error: 'Failed to fetch logs' })
+  }
 })
 
 module.exports = admin
