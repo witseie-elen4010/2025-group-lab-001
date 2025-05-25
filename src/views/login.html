@@ -13,9 +13,33 @@
       font-display: swap;
     }
     
+    @font-face {
+      font-family: 'heading';
+      src: url('/fonts/heading.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    
     body {
       font-family: 'body';
     }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'heading';
+    }
+    button {
+      font-family: 'body';
+      font-size: 1em; /* Maintain consistent text size */
+    }
+    input {
+      font-family: 'body';
+      font-size: 1em;
+    }
+    ::placeholder {
+      font-family: 'body';
+      opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+    }s
 </style>
 </head>
 <body>
