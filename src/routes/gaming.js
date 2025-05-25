@@ -189,7 +189,6 @@ module.exports = (io) => {
     if (!game) {
       return res.status(404).send('Game not found')
     }
-    game.reassignRoles()
 
     if (game.isFinished) {
       game.startNewRound()

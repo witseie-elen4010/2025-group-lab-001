@@ -22,9 +22,9 @@ module.exports = (io) => {
   home.post('/createGame', (req, res) => {
     const { totalRounds } = req.body
     const currentPlayerID = req.user.playerId
-
+    console.log(totalRounds)
     try {
-      const newGame = Game.createGame(currentPlayerID, totalRounds)
+      const newGame = Game.createGame(currentPlayerID, Number(totalRounds))
 
       // Update JWT with game info
       const gameInfo = {
