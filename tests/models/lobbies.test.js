@@ -107,7 +107,6 @@ describe('Home Routes - Join Page Functionality', () => {
 
     test('canAddPlayer returns false when at capacity', () => {
       const game = Game.createGame(1, 1, 3)
-      game.maxPlayers = 3 // Set max players to 3 for this test
 
       // Add 2 more players to reach capacity (1 host + 2 = 3)
       game.createPlayer(2)
@@ -120,7 +119,6 @@ describe('Home Routes - Join Page Functionality', () => {
   test('GET /gaming/invite should return 403 when game is full', async () => {
     // Create a game with max 2 players
     const game = Game.createGame(1, 1, 2)
-    game.maxPlayers = 2
 
     // Add a second player to reach the limit
     game.createPlayer(2)
@@ -132,7 +130,6 @@ describe('Home Routes - Join Page Functionality', () => {
   test('GET /home/join-lobby should redirect with error when game is full', async () => {
     // Create a game with max 2 players
     const game = Game.createGame(1, 1, 2)
-    game.maxPlayers = 2
     const gameID = game.gameID
 
     // Add a second player to reach the limit

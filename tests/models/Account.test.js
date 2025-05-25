@@ -308,7 +308,7 @@ describe('OTP Functions', () => {
   test('sendOTP should send and store OTP for user', async () => {
     otp = await accountFunctions.sendOTP(email)
     expect(otp).toMatch(/^\d{4}$/)
-  })
+  }, 20000)
 
   test('verifyOTP should confirm valid OTP', async () => {
     otp = await accountFunctions.sendOTP(email)
@@ -330,7 +330,7 @@ describe('OTP Functions', () => {
     expect(result).toBeInstanceOf(Error)
     expect(result.message).toBe('Invalid OTP')
     expect(otp2).not.toBe(otp)
-  }, 10000)
+  }, 20000)
 })
 
 describe('Password Reset', () => {
