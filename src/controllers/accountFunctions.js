@@ -56,12 +56,6 @@ const generateToken = (username, playerId, gameInfo = null) => {
   return token
 }
 
-const generateTemporaryToken = (username) => {
-  const payload = { username }
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30m' })
-  return token
-}
-
 const checkValidUser = async function (username, playerId) {
   return accounts.some(account => account.username === username && account.playerId === playerId)
 }
@@ -270,7 +264,6 @@ module.exports = {
   resetPassword,
   generateOTP,
   deleteOldOTPs,
-  generateTemporaryToken,
   accounts,
   otpAccounts
 }
