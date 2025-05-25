@@ -79,8 +79,8 @@ class Game {
     this.state = newState
   }
 
-  static createGame (hostId, totalRounds = 1, maxPlayers = 5) {
-    const game = new Game(hostId, totalRounds, maxPlayers)
+  static createGame (hostId, totalRounds = 1, dictionaryType = 'word', maxPlayers = 5) {
+    const game = new Game(hostId, totalRounds, dictionaryType, maxPlayers)
     game.reassignRoles()
     Game.#activeGames.push(game)
     return game
