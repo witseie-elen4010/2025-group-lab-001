@@ -52,6 +52,11 @@ describe('Game Management', () => {
       const game = Game.createGame(1)
       expect(game.host.getWord()).toBe(game.wordPair.imposter)
     })
+
+    test('should assign prompt to player if host chose for game to contain prompts', () => {
+      const game = Game.createGame(1, 3, 'prompt')
+      expect(String(game.host.getWord()).includes('you ')).toBeTruthy()
+    })
   })
 
   // Unique Player ID generation testing (necessary for the copy link functionality)
