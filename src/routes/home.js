@@ -104,7 +104,7 @@ module.exports = (io) => {
       const lobbies = openGames.map(game => ({
         id: game.gameID,
         playerCount: game.players.length,
-        maxPlayers: game.maxPlayers
+        maxPlayers: game.max
       }))
       res.json({ lobbies })
     } catch (error) {
@@ -171,18 +171,20 @@ module.exports = (io) => {
   })
 
   home.get('/stats', (req, res) => {
-    const playerId = req.user.playerId
-    // const account = accountFunctions.accounts.find(acc => acc.playerId === playerId)
-    const account = accountFunctions.accounts.find(acc => acc.playerId === 1)
+    // const playerId = req.user.playerId
+    const account = accountFunctions.accounts.find(acc => acc.username === req.user.username)
 
     if (!account) {
       return res.status(404).send('User account not found')
     }
+
+    // Initialize pastGames if it doesn't exist
     if (!account.pastGames) account.pastGames = []
+
     try {
       return res.render('userStats', {
         username: account.username,
-        rankedPoints: account.rankedPoints,
+        rankedPoints: account.rankedPoints || 0,
         pastGames: account.pastGames,
         user: req.user
       })
@@ -193,10 +195,11 @@ module.exports = (io) => {
 
   home.get('/global-leaderboard', (req, res) => {
     try {
-    // Get all accounts, sort by ranked points
+      // Get all accounts, sort by ranked points
       const rankedAccounts = accountFunctions.accounts
+        .filter(account => account && account.username) // Ensure account and username exist
         .map(account => ({
-          username: account.username,
+          username: account.username || 'Unknown', // Provide fallback for username
           points: account.rankedPoints || 0
         }))
         .sort((a, b) => b.points - a.points)

@@ -254,40 +254,77 @@ const storeGameResult = function (game) {
   const gameResult = {
     gameId: game.gameID,
     date: new Date().toISOString(),
-    totalRounds: game.totalRounds,
+    totalRounds: game.totalRounds || 0,
     leaderboard: game.leaderboard.entries.map(entry => ({
       playerId: entry.playerId,
       username: entry.username,
       points: entry.points
     })),
-    winner: game.winner
+    winner: game.winner || 'unknown'
   }
 
+  // Track which players we've already processed to avoid duplicate point additions
+  const processedPlayerIds = new Set()
   let allFound = true
-  game.players.forEach(player => {
-    // const account = accounts.find(acc => acc.playerId === player.getId())
-    const account = accounts.find(acc => acc.playerId === 1)
-    if (account) {
-      account.pastGames.unshift(gameResult)
 
-      // ONLY 5 GAMES
-      if (account.pastGames.length > 5) {
-        account.pastGames.pop()
+  // Process each player from the game
+  if (game.players && Array.isArray(game.players)) {
+    game.players.forEach(player => {
+      // Get player ID using any available method
+      let playerId = null
+      if (typeof player.getId === 'function') {
+        playerId = player.getId()
+      } else if (player.id !== undefined) {
+        playerId = player.id
+      } else if (typeof player === 'number') {
+        playerId = player
       }
 
-      // for now just add points total to player points
-      const playerEntry = gameResult.leaderboard.find(entry => entry.playerId === player.getId())
-      if (playerEntry) {
-        account.rankedPoints += playerEntry.points
+      // Skip if already processed or ID is null
+      if (playerId === null || processedPlayerIds.has(playerId)) return
+      processedPlayerIds.add(playerId)
+      
+      const account = accounts.find(acc => acc.playerId === playerId)
+      if (account) {
+        // Add game to account history
+        account.pastGames.unshift(gameResult)
+
+        // ONLY 5 GAMES
+        if (account.pastGames.length > 5) {
+          account.pastGames.pop()
+        }
+
+        // Add points from leaderboard
+        const playerEntry = game.leaderboard.entries.find(entry => entry.playerId === playerId)
+        if (playerEntry) {
+          account.rankedPoints += playerEntry.points
+        }
+      } else {
+        allFound = false
       }
-    } else {
-      allFound = false
-    }
-  })
+    })
+  }
+
+  // If no players were processed, try using leaderboard entries directly
+  if (game.players.length === 0 && game.leaderboard && game.leaderboard.entries) {
+    game.leaderboard.entries.forEach(entry => {
+      if (entry.playerId) {
+        const account = accounts.find(acc => acc.playerId === entry.playerId)
+        if (account) {
+          account.pastGames.unshift(gameResult)
+          if (account.pastGames.length > 5) {
+            account.pastGames.pop()
+          }
+          account.rankedPoints += entry.points || 0
+        }
+      }
+    })
+  }
 
   return allFound
 }
 
+// Export the Account class for testing
 module.exports = {
   createAccount,
   checkValidAccount,
@@ -310,5 +347,6 @@ module.exports = {
   deleteOldOTPs,
   storeGameResult,
   accounts,
-  otpAccounts
+  otpAccounts,
+  Account // Add Account class to exports
 }

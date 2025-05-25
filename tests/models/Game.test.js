@@ -180,4 +180,37 @@ describe('Game Management', () => {
       expect(currentRoles).toEqual(previousRoles) // Roles should not change
     })
   })
+
+  describe('Player Points Management', () => {
+    test('should award points correctly for winning', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.win(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(100)
+    })
+
+    // Test for survived functionality
+    test('should award points correctly for surviving based on votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+      player.increaseVotesReceived() // Simulate receiving 1 vote
+      player.increaseVotesReceived() // Simulate receiving another vote
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(20) // 10 points per vote received
+    })
+
+    // Test for survived functionality with no votes
+    test('should not award points for surviving with no votes received', () => {
+      const game = Game.createGame(1)
+      const player = game.players[0]
+
+      game.survived(player)
+
+      expect(game.leaderboard.getPoints(player)).toBe(0) // No points awarded if no votes received
+    })
+  })
 })
