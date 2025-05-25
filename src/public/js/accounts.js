@@ -23,3 +23,32 @@ if (error) {
     alert(error) // fallback
   }
 }
+
+
+async function handleAdminLogin () {
+  const email = document.querySelector('input[name="email"]').value
+  const password = document.querySelector('input[name="password"]').value
+
+  try {
+    const response = await fetch('/admin/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    })
+
+    const data = await response.json()
+
+    if (response.ok) {
+      // Handle successful login
+      window.location.href = '/admin'
+    } else {
+      // Handle login error
+      alert(data.message || 'Admin login failed')
+    }
+  } catch (error) {
+    console.error('Error during admin login:', error)
+    alert('An error occurred during login')
+  }
+}

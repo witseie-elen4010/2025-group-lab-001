@@ -2,6 +2,7 @@
 const express = require('express')
 const path = require('path')
 const { getRequestLogs } = require('@middleware/requestLogger')
+const { adminLogin } = require('@controllers/adminFunctions')
 
 const admin = express.Router()
 
@@ -20,6 +21,8 @@ const admin = express.Router()
 admin.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'admin.html'))
 })
+
+admin.post('/login', adminLogin)
 
 admin.get('/logs', async (req, res) => {
   try {
