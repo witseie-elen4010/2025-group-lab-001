@@ -68,10 +68,8 @@ module.exports = {
   getWordPair: function (dictionaryType) {
     if (dictionaryType === 'prompt') {
       return this.getRandomPrompt()
-    } else if (dictionaryType === 'word') {
-      return this.getRandomWord()
     } else {
-      throw new Error('Invalid dictionary type. Use "prompt" or "word".')
+      return this.getRandomWord()
     }
   },
   getRandomPrompt: function () {
