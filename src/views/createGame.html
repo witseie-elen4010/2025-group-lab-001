@@ -26,8 +26,38 @@
       font-family: 'heading';
     }
     button {
-      font-family: 'body';
-      font-size: 1em; /* Maintain consistent text size */
+      background-image: url('/assets/button b 1.png');
+      background-size: 100% 100%; /* Cover the entire button */
+      background-repeat: no-repeat;
+      background-color: transparent; /* Remove default background */
+      border: none; /* Remove default border */
+      font-family: 'heading';
+      font-size: 1em;
+      color: #000; /* Text color - adjust if needed */
+      cursor: pointer;
+      text-align: bottom;
+      min-width: 120px; /* Set a minimum width for the button */
+      min-height: 40px; /* Set a minimum height for the button */
+      margin: 12px 10px; /* Add vertical and horizontal margins for spacing */
+      vertical-align: middle; /* Changed from middle to bottom alignment */
+      position: relative; /* Enable fine positioning */
+      top: 20px; /* Move button down slightly relative to its normal position */
+      display: inline-block; /* Ensures proper margin behavior */
+    }
+    
+    .button-container {
+      margin: 20px 0; /* Add space above and below button groups */
+      display: flex;
+      gap: 15px; /* Space between buttons when in a container */
+    }
+    
+    /* Optional: Add hover and active effects */
+    button:hover {
+      transform: scale(1.05);
+    }
+    
+    button:active {
+      transform: scale(0.95);
     }
 </style>
 <head>
@@ -37,7 +67,9 @@
 </head>
 
 <body>
-    <button type="button" onclick="window.location.href='/home'">Back to Home</button>
+    <div class="button-container">
+        <button type="button" onclick="window.location.href='/home'">Back to Home</button>
+    </div>
     <form id="create-game-form" action="/home/createGame" method="POST">
         <h3>Select Number of Rounds:</h3>
         <label>
@@ -56,9 +88,13 @@
         </label><br>
         <label>
             <input type="radio" name="dictionaryType" value="prompt"> Prompts
-        </label><br><br>
-        <button type="submit">Create Game</button>
-    </form>
+
+
+
+
+
+
+</body></form>    </div>        <button type="submit">Create Game</button>    <div class="button-container">        </label><br><br>    </form>
 </body>
 
 </html>

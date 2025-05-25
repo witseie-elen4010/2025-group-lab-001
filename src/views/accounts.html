@@ -20,6 +20,13 @@
     body {
       font-family: 'body';
       background-color: #FFDBDB;
+      background-image: url('/assets/flamingoes screen 1.png');
+      background-size: cover;
+      background-position: 0px -260px; /* X-position Y-position in pixels */
+      background-repeat: no-repeat;
+      image-rendering: pixelated;  /* For Chrome/Edge */
+      image-rendering: crisp-edges; /* For Firefox */
+      -ms-interpolation-mode: nearest-neighbor; /* For IE */
     }
     
     h1, h2, h3, h4, h5, h6 {
@@ -28,7 +35,7 @@
     
     /* Replace default buttons with custom button sprite */
     button {
-      background-image: url('/assets/button b 1.png');
+      background-image: url('/assets/button 1.png');
       background-size: 100% 100%; /* Cover the entire button */
       background-repeat: no-repeat;
       background-color: transparent; /* Remove default background */
@@ -40,10 +47,17 @@
       text-align: bottom;
       min-width: 120px; /* Set a minimum width for the button */
       min-height: 40px; /* Set a minimum height for the button */
-      margin-top: 0px; /* Add space above the button to move it down */
+      margin: 12px 10px; /* Add vertical and horizontal margins for spacing */
       vertical-align: middle; /* Changed from middle to bottom alignment */
       position: relative; /* Enable fine positioning */
       top: 20px; /* Move button down slightly relative to its normal position */
+      display: inline-block; /* Ensures proper margin behavior */
+    }
+    
+    .button-container {
+      margin: 20px 0; /* Add space above and below button groups */
+      display: flex;
+      gap: 15px; /* Space between buttons when in a container */
     }
     
     /* Optional: Add hover and active effects */
@@ -76,8 +90,10 @@
 <body>
     <h1>Plastic Flamingoes</h1>
     <p>Sign Up or Log in</p>
-    <button id="create-account-btn">Create Account</button>
-    <button id="login-btn">Login</button>
+    <div class="button-container">
+      <button id="create-account-btn">Create Account</button>
+      <button id="login-btn">Login</button>
+    </div>
     <script src="/scripts/accounts.js" defer></script>
 </body>
 
