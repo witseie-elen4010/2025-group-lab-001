@@ -44,4 +44,5 @@ if (gameInfo?.isSpectator === 'true') {
       window.location.href = '/gaming/next-round'
     }
   })
+
 })

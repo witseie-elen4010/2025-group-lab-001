@@ -1,12 +1,11 @@
 'use strict'
 const express = require('express')
 const path = require('path')
-const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 const { verifyToken } = require('@middleware/auth')
 
-module.exports = (io) => {
+module.exports = (io, Game) => {
   const gaming = express.Router()
 
   // Apply JWT verification to all gaming routes except invite
