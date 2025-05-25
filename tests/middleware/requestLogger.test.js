@@ -1,38 +1,39 @@
 /* eslint-env jest */
 'use strict'
 
-const { requestLoggerMiddleware, getRequestLogs, socketLoggerMiddleware } = require('@middleware/requestLogger')
+const { requestLoggerMiddleware, socketLoggerMiddleware } = require('@middleware/requestLogger')
 const jwt = require('jsonwebtoken')
 
 const JWT_SECRET = 'your-secret-key'
 
 // Mock database logs
 let mockLogs = []
-const mockInputParams = []
 
 // Mock the database module
 jest.mock('@config/db', () => {
-  let inputParams = []
   const mockRequest = {
-    input: jest.fn().mockImplementation((name, type, value) => {
-      inputParams.push({ name, type, value })
-      return mockRequest
-    }),
+    input: jest.fn().mockReturnThis(),
     query: jest.fn().mockImplementation(async (query) => {
       if (query.includes('SELECT')) {
         return { recordset: mockLogs }
       } else if (query.includes('INSERT')) {
+        // Get the input parameters from the most recent calls to input()
+        const params = mockRequest.input.mock.calls.reduce((acc, [name, _, value]) => {
+          acc[name] = value
+          return acc
+        }, {})
+
         const newLog = {
-          players: inputParams.find(p => p.name === 'players')?.value || 'unknown',
-          action: inputParams.find(p => p.name === 'action')?.value || 'unknown',
-          details: inputParams.find(p => p.name === 'details')?.value || '',
-          timestamp: inputParams.find(p => p.name === 'timestamp')?.value || new Date().toISOString()
+          players: params.players || 'unknown',
+          action: params.action || 'unknown',
+          details: params.details || '',
+          timestamp: '2024-03-14T12:00:00.000Z' // Use fixed timestamp
         }
         mockLogs.unshift(newLog)
-        inputParams = [] // Reset params after use
+        mockRequest.input.mockClear() // Clear input call history
         return { rowsAffected: [1] }
       }
-      return { rowsAffected: [0] }
+      return { recordset: [] }
     })
   }
 
@@ -68,12 +69,12 @@ describe('requestLoggerMiddleware', () => {
     }
     res = {}
     next = jest.fn()
-    // Mock Date.now() to return a consistent timestamp
     jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-03-14T12:00:00.000Z')
   })
 
   afterEach(() => {
     jest.restoreAllMocks()
+    mockLogs = []
   })
 
   test('logs start game action', async () => {

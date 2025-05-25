@@ -1,3 +1,5 @@
+/* eslint-env jest */
+/* eslint-disable no-unused-vars */
 jest.setTimeout(10000)
 
 // Mock the database connection
