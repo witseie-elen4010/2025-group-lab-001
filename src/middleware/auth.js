@@ -2,7 +2,16 @@
 
 const jwt = require('jsonwebtoken')
 const accountFunctions = require('@controllers/accountFunctions')
-
+// let accountFunctionsTmp
+// const initialiseAccountFunctions = async function () {
+//   try {
+//     accountFunctionsTmp = await import('../controllers/accountFunctions.js')
+//   } catch (error) {
+//     console.log('Error loading accountFunctions:', error)
+//   }
+// }
+// initialiseAccountFunctions()
+// const accountFunctions = accountFunctionsTmp
 // JWT secret key - should match the one in accountFunctions.js
 const JWT_SECRET = 'your-secret-key'
 

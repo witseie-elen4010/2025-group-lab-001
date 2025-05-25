@@ -5,6 +5,17 @@ const Game = require('@models/Game')
 const { verifyToken } = require('@middleware/auth')
 const accountFunctions = require('@controllers/accountFunctions')
 
+// let accountFunctionsTmp
+// const initialiseAccountFunctions = async function () {
+//   try {
+//     accountFunctionsTmp = await import('../controllers/accountFunctions.js')
+//   } catch (error) {
+//     console.log('Error loading accountFunctions:', error)
+//   }
+// }
+// initialiseAccountFunctions()
+// const accountFunctions = accountFunctionsTmp
+
 module.exports = (io) => {
   const home = express.Router()
 
