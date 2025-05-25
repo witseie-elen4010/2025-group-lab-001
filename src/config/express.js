@@ -127,6 +127,7 @@ function createApp () {
 
   app.use('/scripts', express.static(path.join(__dirname, '..', 'public', 'js')))
   app.use('/fonts', express.static(path.join(__dirname, '..', 'public', 'fonts')))
+  app.use('/assets', express.static(path.join(__dirname, '..', 'public', 'assets')))
 
   // The code commented below is for debugging purposes. It returns the request method and URL for each request made to the server.
   // app.use((req, res, next) => {
