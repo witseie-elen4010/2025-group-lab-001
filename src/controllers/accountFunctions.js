@@ -283,7 +283,7 @@ const storeGameResult = function (game) {
       // Skip if already processed or ID is null
       if (playerId === null || processedPlayerIds.has(playerId)) return
       processedPlayerIds.add(playerId)
-      
+
       const account = accounts.find(acc => acc.playerId === playerId)
       if (account) {
         // Add game to account history

@@ -400,6 +400,7 @@ describe('Home Routes', () => {
           'Password123',
           'Password123'
         )
+        newAccount.points = 0
         const accountObj = accountFunctions.accounts.find(a => a.username === 'testuser2')
         accountObj.rankedPoints = 200
       }

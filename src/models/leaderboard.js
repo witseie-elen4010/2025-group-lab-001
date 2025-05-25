@@ -1,7 +1,5 @@
 'use strict'
 
-const e = require('express')
-
 class Leaderboard {
   constructor (players = []) {
     this.entries = players.map(player => ({
