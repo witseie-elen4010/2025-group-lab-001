@@ -24,7 +24,7 @@ class Account {
     this.username = username
     this.password = password
     this.playerId = playerIdCounter++ // Increment counter for each new account
-    this.pastGames = []  //Store the leaderboards of the past 5 games 
+    this.pastGames = [] // Store the leaderboards of the past 5 games
     this.rankedPoints = 0
   }
 }
@@ -246,7 +246,7 @@ const resetPassword = async function (username, password, confirmPassword) {
   return true
 }
 
-const storeGameResult = function(game) {
+const storeGameResult = function (game) {
   if (!game || !game.leaderboard) {
     return false
   }
@@ -265,26 +265,26 @@ const storeGameResult = function(game) {
 
   let allFound = true
   game.players.forEach(player => {
-    const account = accounts.find(acc => acc.playerId === player.getId());
+    const account = accounts.find(acc => acc.playerId === player.getId())
     if (account) {
-      account.pastGames.unshift(gameResult);
-      
+      account.pastGames.unshift(gameResult)
+
       // ONLY 5 GAMES
       if (account.pastGames.length > 5) {
-        account.pastGames.pop();
+        account.pastGames.pop()
       }
-      
+
       // for now just add points total to player points
-      const playerEntry = gameResult.leaderboard.find(entry => entry.playerId === player.getId());
+      const playerEntry = gameResult.leaderboard.find(entry => entry.playerId === player.getId())
       if (playerEntry) {
-        account.rankedPoints += playerEntry.points;
+        account.rankedPoints += playerEntry.points
       }
     } else {
-      allFound = false;
+      allFound = false
     }
-  });
+  })
 
-  return allFound;
+  return allFound
 }
 
 module.exports = {

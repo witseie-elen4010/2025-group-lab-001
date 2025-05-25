@@ -4,6 +4,7 @@ const path = require('path')
 const account = express.Router()
 const accountFunctions = require('@controllers/accountFunctions')
 const querystring = require('querystring')
+const { verifyToken } = require('@middleware/auth')
 
 account.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'accounts.html'))
@@ -167,6 +168,28 @@ account.post('/resetPassword', async (req, res) => {
 
 account.get('/passwordReset', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'views', 'passwordReset.html'))
+})
+
+account.get('/stats', verifyToken, (req, res) => {
+  console.log('You have redirected successfully')
+  const playerId = req.user.playerId
+
+  const account = accountFunctions.accounts.find(acc => acc.playerId === playerId)
+
+  if (!account) {
+    return res.status(404).send('User account not found')
+  }
+  if (!account.pastGames) account.pastGames = []
+  try {
+    return res.render('userStats', {
+      username: account.username,
+      rankedPoints: account.rankedPoints,
+      pastGames: account.pastGames,
+      user: req.user
+    })
+  } catch (error) {
+    return res.status(500).send('Error displaying user stats: ' + error.message)
+  }
 })
 
 module.exports = account

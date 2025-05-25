@@ -3,6 +3,7 @@ const express = require('express')
 const path = require('path')
 const Game = require('@models/Game')
 const votingFunctions = require('@controllers/votingFunctions')
+const accountFunctions = require('@controllers/accountFunctions')
 const { GAME_STATES } = require('@config/gameConstants')
 const { verifyToken } = require('@middleware/auth')
 
@@ -172,13 +173,13 @@ module.exports = (io) => {
       }
       const winner = game.getWinner()
       res.render('leaderboard', {
-      winner,
-      leaderboard: game.leaderboard.entries, // Send the leaderboard entries
-      roundsCompleted: game.roundsComplete
-    })
-  } catch (error) {
-    res.status(500).send('Error displaying leaderboard: ' + error.message)
-  }
+        winner,
+        leaderboard: game.leaderboard.entries, // Send the leaderboard entries
+        roundsCompleted: game.roundsComplete
+      })
+    } catch (error) {
+      res.status(500).send('Error displaying leaderboard: ' + error.message)
+    }
   })
 
   gaming.get('/next-round', (req, res) => {
@@ -192,11 +193,10 @@ module.exports = (io) => {
 
     if (game.isFinished) {
       game.startNewRound()
-       if(game.roundsComplete) accountFunctions.storeGameResult(game)
+      if (game.roundsComplete) accountFunctions.storeGameResult(game)
       return res.redirect(`/gaming/leaderboard/${gameID}`)
     }
 
-   
     return res.redirect('/gaming/waiting')
   })
 
