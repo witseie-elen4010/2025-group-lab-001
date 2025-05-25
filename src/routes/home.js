@@ -19,8 +19,13 @@ const accountFunctions = require('@controllers/accountFunctions')
 module.exports = (io) => {
   const home = express.Router()
 
-  // Apply JWT verification to all home routes
-  home.use(verifyToken)
+  home.use((req, res, next) => {
+    if (req.path === '/invite') {
+      next()
+    } else {
+      verifyToken(req, res, next)
+    }
+  })
 
   home.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'index.html'))
@@ -166,15 +171,16 @@ module.exports = (io) => {
       if (!game.canAddPlayer()) {
         return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
       }
-
-      game.createPlayer(req.user.playerId)
-
+      // Generate a new player ID for the guest if they don't have one
+      const playerId = accountFunctions.generateGuestPlayerId()
+      game.createPlayer(playerId)
       const gameInfo = {
         gameId: gameID,
         isHost: false,
-        isSpectator: false
+        isSpectator: false,
+        isGuest: true
       }
-      const newToken = accountFunctions.generateToken(req.user.username, req.user.playerId, gameInfo)
+      const newToken = accountFunctions.generateToken(`Guest ${playerId}`, playerId, gameInfo)
       res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
       res.redirect('/gaming/waiting')
     } else {

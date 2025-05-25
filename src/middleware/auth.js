@@ -27,6 +27,8 @@ const verifyToken = (req, res, next) => {
     req.user = decoded
     if (accountFunctions.checkValidUser(req.user.username, req.user.playerId)) {
       next()
+    } else if (req.user.gameInfo?.isGuest === true) {
+      next()
     } else {
       return res.status(401).redirect('/login')
     }

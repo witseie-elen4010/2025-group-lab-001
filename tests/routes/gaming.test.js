@@ -253,6 +253,7 @@ describe('Gaming Routes', () => {
     })
   })
 
+
   describe('Word Share System', () => {
     test('should serve word share page', async () => {
       testGame.setState(GAME_STATES.SHARE_WORD)
@@ -284,7 +285,6 @@ describe('Gaming Routes', () => {
         .get('/gaming/chatRoom')
         .set('Cookie', [`token=${testToken}`])
         .expect(200)
-
       expect(response.type).toBe('text/html')
     })
   })
