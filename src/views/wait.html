@@ -19,21 +19,28 @@
     
     body {
       font-family: 'body';
-      background-color: #FFDBDB;
-      background-image: url('/assets/flamingoes screen 6.png');
-      background-size: contain;
-      background-position: 0px 0px; /* X-position Y-position in pixels */
+      background-color: #97EAF4;
+      background-image: url('/assets/flamingos screen 6.png');
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
+      background-size: 30%;
+      background-position: 450px 20px; /* X-position Y-position in pixels */
       background-repeat: no-repeat;
       image-rendering: pixelated;  /* For Chrome/Edge */
       image-rendering: crisp-edges; /* For Firefox */
       -ms-interpolation-mode: nearest-neighbor; /* For IE */
     }
+
+    html {
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
+    }
     
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
+       margin-bottom: 20px;
+       margin-top: 10px;
     }
     button {
-      background-image: url('/assets/button b 1.png');
+      background-image: url('/assets/button 1.png');
       background-size: 100% 100%; /* Cover the entire button */
       background-repeat: no-repeat;
       background-color: transparent; /* Remove default background */
@@ -50,6 +57,9 @@
       position: relative; /* Enable fine positioning */
       top: 20px; /* Move button down slightly relative to its normal position */
       display: inline-block; /* Ensures proper margin behavior */
+      margin-bottom: 20px;
+      margin-top: 10px;
+      cursor: url('/assets/sprite2 flamingo.png'), default;
     }
     
     /* Optional: Add hover and active effects */
@@ -79,6 +89,8 @@
             margin-left: 10px;
         }
     </style>
+
+    <link rel="stylesheet" href="/scripts/help.css">
 </head>
 
 <body>
@@ -103,6 +115,24 @@
     <ul id="player-list">
         <li>Loading player list...</li>
     </ul>
+
+    <!-- Button in top right corner -->
+  <button id="open-popup" class="top-right-button">Instructions</button>
+
+  <!-- Popup card -->
+  <div class="popup" id="my-popup">
+    <div class="popup-content">
+      <span class="close-button">&times;</span>
+      <h2>How to play:</h2>
+      <p>Step 1: Give a short description of your word/prompt</p>
+      <p>Step 2: Discuss with everyone to find who has a different word/prompt from everyone else</p>
+      <p>Step 3: Vote out the one you think got the word or prompt</p>
+      <h3>Heads Up</h3>
+      <p>You could be the one with a different word/prompt</p>
+    </div>
+  </div>
+
+  <script src="/scripts/help.js"></script>
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="/scripts/getAllPlayers.js"></script>

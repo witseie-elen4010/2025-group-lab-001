@@ -103,49 +103,62 @@ module.exports = (io, Game) => {
     const player = req.player
     const game = req.game
     const vote = req.body.voteValue
-    // let vote = null
     let votedPlayer = null
+
     if (game.getState() === GAME_STATES.VOTING) {
-      // console.log(`Player ${player.getId()} is voting`)
       if (player.getHasVoted() === false && player.isActive()) {
-        // console.log(`Player ${player.getId()} has not voted yet`)
-        // vote = req.body.vote
         if (vote !== null && vote !== undefined) {
-          // console.log(vote + ' is the vote')
           votedPlayer = game.findPlayer(vote)
           if (votedPlayer !== null && votedPlayer !== undefined) {
             votedPlayer.increaseVotesReceived()
             player.setHasVoted(true)
             game.decreaseNumVotesOustsanding()
-            // console.log(`Player ${player.getId()} voted for ${votedPlayer.getId()}`)
           }
         } else {
           console.error('Vote is null or undefined')
         }
       }
     }
+
+    // Check if this was the last vote
     if (game.getNumVotesOutstanding() === 0) {
       const votedOutPlayer = votingFunctions.mostVotedPlayer(game.players)
+      game._lastVotedOut = votedOutPlayer // Store voted out player for results page
       if (votedOutPlayer !== null && votedOutPlayer !== undefined) {
         votedOutPlayer.setActive(false)
       }
       votingFunctions.checkGameEnd(game)
-      // console.log(`Player ${votedOutPlayer ? votedOutPlayer.getId() : 'none'} was voted out`)
-      // console.log(`Game state after voting: ${game.getState()}`)
-      if (game.getState() === GAME_STATES.SHARE_WORD) {
-        io.emit('start game', game.gameID)
-      } else if (game.getState() === GAME_STATES.FINISHED) {
-        io.emit('next round', game.gameID)
-      }
+
+      // Redirect everyone to vote results page
+      io.emit('show vote results', game.gameID)
+      res.redirect('/gaming/voteResults')
     } else {
-      if (game.getState() === GAME_STATES.VOTING) {
-        if (player.getHasVoted() === false && player.isActive()) {
-          res.redirect('/gaming/voting')
-        } else {
-          res.redirect('/gaming/waitingForVotes')
-        }
-      }
+      res.redirect('/gaming/waitingForVotes')
     }
+  })
+
+  gaming.get('/voteResults', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'voteResults.html'))
+  })
+
+  gaming.get('/voteResult', (req, res) => {
+    const game = req.game
+    const votedOutPlayer = game._lastVotedOut
+
+    if (!votedOutPlayer) {
+      // Return a response that indicates no one was voted out
+      return res.json({
+        noOneVoted: true,
+        gameComplete: game.getState() === GAME_STATES.FINISHED
+      })
+    }
+
+    res.json({
+      noOneVoted: false,
+      votedOutId: votedOutPlayer.getId(),
+      wasImposter: votedOutPlayer.getRole() === 'imposter',
+      gameComplete: game.getState() === GAME_STATES.FINISHED
+    })
   })
 
   gaming.get('/waitingForVotes', (req, res) => {
