@@ -53,12 +53,12 @@
     }
     /* Optional: Add hover and active effects */
     button:hover {ner {
-      transform: scale(1.05);space above and below button groups */
+      transform: scale(1.05);/*space above and below button groups */
     } display: flex;
       gap: 15px; /* Space between buttons when in a container */
     button:active {
       transform: scale(0.95);
-    }* Optional: Add hover and active effects */
+    }/* Optional: Add hover and active effects */
     button:hover {
     /* Add styling for input fields */
     input {
@@ -70,30 +70,27 @@
     ::placeholder {for input fields */
       font-family: 'body';
       opacity: 0.7; /* Make placeholder slightly transparent teehee*/
-    } font-size: 1em;
+    } 
+  }font-size: 1em;
 </style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account</title>
-</head>pacity: 0.7; /* Make placeholder slightly transparent teehee*/
-    }
-<body>e>
+</head>
+<body>
     <form action="/createAccount" method="post">
         <h1>Create Account</h1>
-        <p>Please fill in the following form to create an account</p>1.0">
-        <hr>reate Account</title>
+        <h2>Please fill in the following form to create an account</h2>
+        <hr>
         <label for="email"><b>Email</b></label>
-        <input type="text" placeholder="Enter Email" name="email" required>
-<body>
+          <input type="text" placeholder="Enter Email" name="email" required>
         <label for="username"><b>Username</b></label>
-        <input type="text" placeholder="Enter Username" name="username" required>
-        <p>Please fill in the following form to create an account</p>
+          <input type="text" placeholder="Enter Username" name="username" required>
         <label for="password"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="password" required>
-        <input type="text" placeholder="Enter Email" name="email" required>
+          <input type="password" placeholder="Enter Password" name="password" required>
         <label for="confirmPassword"><b>Confirm Password</b></label>   
-        <input type="password" placeholder="Confirm Password" name="confirmPassword" required>
+          <input type="password" placeholder="Confirm Password" name="confirmPassword" required>
 
         <button type="submit">Create Account</button>
         <button type="button" onclick="window.location.href='/login'">Login</button>
