@@ -30,7 +30,7 @@ account.post('/createAccount', async (req, res) => {
     const result = await accountFunctions.createAccount(email, username, password, confirmPassword)
     if (result instanceof Error) {
       const qs = querystring.stringify({ error: result.message })
-      return res.redirect(`/account/createAccount?${qs}`)
+      return res.redirect(`/createAccount?${qs}`)
     } else {
       const token = accountFunctions.generateToken(result.username, result.playerId)
       res.cookie('token', token, {
@@ -42,7 +42,7 @@ account.post('/createAccount', async (req, res) => {
     }
   } catch (error) {
     const qs = querystring.stringify({ error: 'Internal server error' })
-    return res.redirect(`/account/createAccount?${qs}`)
+    return res.redirect(`/createAccount?${qs}`)
   }
 })
 
@@ -56,7 +56,7 @@ account.post('/login', async (req, res) => {
     const loginResult = await accountFunctions.loginAccount(email, password)
     if (loginResult instanceof Error) {
       const errorMsg = encodeURIComponent(loginResult.message)
-      return res.redirect(`/account/login?error=${errorMsg}`)
+      return res.redirect(`/login?error=${errorMsg}`)
     } else {
       const token = accountFunctions.generateToken(loginResult.username, loginResult.playerId)
       res.cookie('token', token, {
