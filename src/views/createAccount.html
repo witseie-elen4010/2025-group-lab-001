@@ -1,82 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
-    @font-face {
-      font-family: 'body';
-      src: url('/fonts/body.ttf') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-      font-display: swap;
-    }
-    
-    @font-face {
-      font-family: 'heading';
-      src: url('/fonts/heading.ttf') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-      font-display: swap;
-    }
-    
-    body {
-      font-family: 'body';
-      background-color: #FFDBDB;
-      background-image: url('/assets/flamingoes screen 2.png');
-      background-size: cover;
-      background-position: 0px -260px; /* X-position Y-position in pixels */
-      background-repeat: no-repeat;
-      image-rendering: pixelated;  /* For Chrome/Edge */
-      image-rendering: crisp-edges; /* For Firefox */
-      -ms-interpolation-mode: nearest-neighbor; /* For IE */
-    }
-    
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'heading';
-    }
-    button {
-      background-image: url('/assets/button 1.png');
-      background-size: 100% 100%; /* Cover the entire button */
-      background-repeat: no-repeat;
-      background-color: transparent; /* Remove default background */
-      border: none; /* Remove default border */
-      font-family: 'heading';
-      font-size: 1em;
-      color: #000; /* Text color - adjust if needed */
-      cursor: pointer;
-      text-align: bottom;
-      min-width: 120px; /* Set a minimum width for the button */
-      min-height: 40px; /* Set a minimum height for the button */
-      margin: 12px 10px; /* Add vertical and horizontal margins for spacing */
-      vertical-align: middle; /* Changed from middle to bottom alignment */
-      position: relative; /* Enable fine positioning */
-      top: 20px; /* Move button down slightly relative to its normal position */
-      display: inline-block; /* Ensures proper margin behavior */
-    }
-    /* Optional: Add hover and active effects */
-    button:hover {ner {
-      transform: scale(1.05);/*space above and below button groups */
-    } display: flex;
-      gap: 15px; /* Space between buttons when in a container */
-    button:active {
-      transform: scale(0.95);
-    }/* Optional: Add hover and active effects */
-    button:hover {
-    /* Add styling for input fields */
-    input {
-      font-family: 'body';
-      font-size: 1em;
-    } transform: scale(0.95);
-    }
-    
-    ::placeholder {for input fields */
-      font-family: 'body';
-      opacity: 0.7; /* Make placeholder slightly transparent teehee*/
-    } 
-  }font-size: 1em;
-</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Account</title>
+    <style>
+      @font-face {
+        font-family: 'body';
+        src: url('/fonts/body.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      
+      @font-face {
+        font-family: 'heading';
+        src: url('/fonts/heading.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+      }
+      
+      body {
+        font-family: 'body';
+        background-color: #FFDBDB;
+        background-image: url('/assets/flamingoes screen 2.png');
+        background-size: cover;
+        background-position: 0px -260px; /* X-position Y-position in pixels */
+        background-repeat: no-repeat;
+        image-rendering: pixelated;  /* For Chrome/Edge */
+        image-rendering: crisp-edges; /* For Firefox */
+        -ms-interpolation-mode: nearest-neighbor; /* For IE */
+      }
+      
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'heading';
+      }
+      button {
+        background-image: url('/assets/button 1.png');
+        background-size: 100% 100%; /* Cover the entire button */
+        background-repeat: no-repeat;
+        background-color: transparent; /* Remove default background */
+        border: none; /* Remove default border */
+        font-family: 'heading';
+        font-size: 1em;
+        color: #000; /* Text color - adjust if needed */
+        cursor: pointer;
+        text-align: bottom;
+        min-width: 120px; /* Set a minimum width for the button */
+        min-height: 40px; /* Set a minimum height for the button */
+        margin: 12px 10px; /* Add vertical and horizontal margins for spacing */
+        vertical-align: middle; /* Changed from middle to bottom alignment */
+        position: relative; /* Enable fine positioning */
+        top: 20px; /* Move button down slightly relative to its normal position */
+        display: inline-block; /* Ensures proper margin behavior */
+      }
+       /* Optional: Add hover and active effects */
+      button:hover {
+        transform: scale(1.05);
+      }
+      
+      button:active {
+        transform: scale(0.95);
+      }
+      input {
+        font-family: 'body';
+        font-size: 1em;
+      }
+      ::placeholder {
+        font-family: 'body';
+        opacity: 0.7; /* Make placeholder slightly transparent teehee*/
+      }
+  </style>
 </head>
 <body>
     <form action="/createAccount" method="post">
