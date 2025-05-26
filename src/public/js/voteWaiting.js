@@ -13,6 +13,12 @@ const cookies = document.cookie.split(';').reduce((acc, cookie) => {
   const playerId = payload.playerId
   const gameInfo = payload.gameInfo
 
+  socket.on('show vote results', (gameID) => {
+    if (Number(gameID) === Number(gameInfo?.gameId)) {
+      window.location.href = '/gaming/voteResults'
+    }
+  })
+  
   socket.on('start game', (gameID) => {
     if (Number(gameID) === Number(gameInfo?.gameId)) {
       window.location.href = '/gaming/wordShare'

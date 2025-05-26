@@ -19,8 +19,9 @@
     
     body {
       font-family: 'body';
-      background-color: #FFDBDB;
+      background-color: #97EAF4;
       background-image: url('/assets/flamingoes screen 1.png');
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
       background-size: cover;
       background-position: 0px -260px; /* X-position Y-position in pixels */
       background-repeat: no-repeat;
@@ -28,9 +29,15 @@
       image-rendering: crisp-edges; /* For Firefox */
       -ms-interpolation-mode: nearest-neighbor; /* For IE */
     }
+
+    html {
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
+    }  
     
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
+       margin-bottom: 20px;
+       margin-top: 10px;
     }
     
     /* Replace default buttons with custom button sprite */
@@ -52,6 +59,7 @@
       position: relative; /* Enable fine positioning */
       top: 20px; /* Move button down slightly relative to its normal position */
       display: inline-block; /* Ensures proper margin behavior */
+      cursor: url('/assets/sprite2 flamingo.png'), default;
     }
     
     .button-container {

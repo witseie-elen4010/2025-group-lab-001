@@ -24,6 +24,7 @@
       body {
         font-family: 'body';
         background-color: #FFDBDB;
+        cursor: url('/assets/sprite2 plastic flamingo.png'), default;
         background-image: url('/assets/flamingoes screen 2.png');
         background-size: cover;
         background-position: 0px -260px; /* X-position Y-position in pixels */
@@ -31,6 +32,9 @@
         image-rendering: pixelated;  /* For Chrome/Edge */
         image-rendering: crisp-edges; /* For Firefox */
         -ms-interpolation-mode: nearest-neighbor; /* For IE */
+      }
+      html {
+        cursor: url('/assets/sprite2 plastic flamingo.png'), default;
       }
       
       h1, h2, h3, h4, h5, h6 {
@@ -54,6 +58,7 @@
         position: relative; /* Enable fine positioning */
         top: 20px; /* Move button down slightly relative to its normal position */
         display: inline-block; /* Ensures proper margin behavior */
+        cursor: url('/assets/sprite2 flamingo.png'), default;
       }
        /* Optional: Add hover and active effects */
       button:hover {
@@ -88,9 +93,7 @@
           <input type="password" placeholder="Confirm Password" name="confirmPassword" required>
 
         <button type="submit">Create Account</button>
-        <button type="button" onclick="window.location.href='/login'">Login</button>
     </form>
     <script src="/scripts/accounts.js"></script>
 </body>
-
 </html>

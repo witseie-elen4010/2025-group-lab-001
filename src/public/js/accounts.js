@@ -45,6 +45,8 @@ async function handleAdminLogin () {
       window.location.href = '/admin'
     } else {
       // Handle login error
+
+      console.log(data)
       alert(data.message || 'Admin login failed')
     }
   } catch (error) {
