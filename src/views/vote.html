@@ -123,6 +123,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Voting Page</title>
+  <link rel="stylesheet" href="/scripts/help.css">
 </head>
 <body>
   <h1>Vote to Eliminate a Player</h1>
@@ -140,6 +141,42 @@
     </div>
     <button type="submit">Submit Vote</button>
   </form>
+  
+  <!-- Button in top right corner -->
+  <button id="open-popup" class="top-right-button">Instructions</button>
+
+  <!-- Popup card -->
+  <div class="popup" id="my-popup">
+    <div class="popup-content">
+      <span class="close-button">&times;</span>
+      <h2>How to play:</h2>
+      <p>Step 1: Give a short description of your word/prompt</p>
+      <p>Step 2: Discuss with everyone to find who has a different word/prompt from everyone else</p>
+      <p>Step 3: Vote out the one you think got the word or prompt</p>
+      <h3>Heads Up</h3>
+      <p>You could be the one with a different word/prompt</p>
+    </div>
+  </div>
+
+  <script src="/scripts/help.js"></script>
+  
+  <!-- Button in top right corner -->
+  <button id="open-popup" class="top-right-button">Instructions</button>
+
+  <!-- Popup card -->
+  <div class="popup" id="my-popup">
+    <div class="popup-content">
+      <span class="close-button">&times;</span>
+      <h2>How to play:</h2>
+      <p>Step 1: Give a short description of your word/prompt</p>
+      <p>Step 2: Discuss with everyone to find who has a different word/prompt from everyone else</p>
+      <p>Step 3: Vote out the one you think got the word or prompt</p>
+      <h3>Heads Up</h3>
+      <p>You could be the one with a different word/prompt</p>
+    </div>
+  </div>
+
+  <script src="/scripts/help.js"></script>
   
   <div id="errorDisplay"></div>
   
