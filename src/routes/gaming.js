@@ -88,6 +88,12 @@ module.exports = (io, Game) => {
   gaming.get('/share-word', (req, res) => {
     res.json({ hello: 'hello' })
   })
+
+  gaming.get('/displayRoles', (req, res) => {
+    const game = req.game
+    game.reassignAllRoles()
+    res.sendFile(path.join(__dirname, '..', 'views', 'displayRoles.html'))
+  })
   gaming.get('/voting', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'vote.html'))
   })

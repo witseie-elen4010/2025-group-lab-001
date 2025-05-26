@@ -59,6 +59,27 @@ class Game {
     this.players[this.imposter].word = this.wordPair[this.players[this.imposter].role]
   }
 
+  reassignAllRoles () {
+    let numImposters = 1
+    const numPlayers = this.players.length
+    if (numPlayers > 4) {
+      numImposters++
+    } else if (numPlayers > 7) {
+      numImposters += 2
+    } else if (numPlayers > 9) {
+      numImposters += 3
+    }
+
+    const availRoles = Array(numPlayers).fill('civilian')
+    for (let i = 0; i < numImposters; i++) {
+      availRoles[Math.floor(Math.random() * availRoles.length)] = 'imposter'
+    }
+    for (let i = 0; i < this.players.length; i++) {
+      this.players[i].role = availRoles[i]
+      this.players[i].word = this.wordPair[availRoles[i]]
+    }
+  }
+
   generateUniquePlayerID () {
     let nextId = this.players.length
     for (let i = 0; i < this.players.length; i++) {

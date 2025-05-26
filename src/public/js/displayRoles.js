@@ -22,11 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     node.textContent = `Your role is: ${role}`
     roleDisplay.appendChild(node)
 
-    setTimeout(() => {
-        // console.log('Emitting share description event')
-        socket.emit('share description', {playerId, gameId: gameInfo.gameId})
-        window.location.href = '/gaming/wordShare'
-    }, 3000)
+    // Only the host should emit the share description event
+    if (gameInfo?.isHost) {
+        setTimeout(() => {
+            socket.emit('share description', {gameId: gameInfo.gameId})
+        }, 3000)
+    }
 })
 
 const getRole = async function () {
@@ -35,10 +36,12 @@ const getRole = async function () {
         throw new Error('Failed to fetch role')
     }
     const data = await res.json()
-    // console.log('Role fetched:', data.role)
     return data.role
 }
 
-socket.on('share description', () => {
-    window.location.href = '/gaming/wordShare'
+// All players listen for share description to move to next phase
+socket.on('share description', (gameID) => {
+    if (Number(gameID) === Number(gameInfo.gameId)) {
+        window.location.href = '/gaming/wordShare'
+    }
 })
