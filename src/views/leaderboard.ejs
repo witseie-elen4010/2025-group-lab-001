@@ -19,14 +19,61 @@
     
     body {
       font-family: 'body';
-      background-color: #FFDBDB;
+      background-color: #97EAF4;
+      text-align: center;
+      padding: 20px;
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
+    }
+
+    html {
+      cursor: url('/assets/sprite2 plastic flamingo.png'), default;
     }
     
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
+      margin-bottom: 20px;
+      margin-top: 10px;
     }
+
+    table {
+      margin: 0 auto;
+      width: 80%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      border: none;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #333;
+      text-align: center;
+      border: none;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: #57B8C5;
+      font-family: 'heading';
+    }
+
+    tr:nth-child(even) {
+      background-color: #b8e8ef;
+    }
+
+    tr:nth-child(odd) {
+      background-color: #d5f3f7;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
     button {
-      background-image: url('/assets/button b 1.png');
+      background-image: url('/assets/button 1.png');
       background-size: 100% 100%; /* Cover the entire button */
       background-repeat: no-repeat;
       background-color: transparent; /* Remove default background */
@@ -42,6 +89,9 @@
       vertical-align: middle; /* Changed from middle to bottom alignment */
       position: relative; /* Enable fine positioning */
       top: 20px; /* Move button down slightly relative to its normal position */
+      margin-bottom: 20px;
+      margin-top: 10px;
+      cursor: url('/assets/sprite2 flamingo.png'), default;
     }
     
     /* Optional: Add hover and active effects */
@@ -73,24 +123,22 @@
   </h2>
 
   <table>
-  <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Player ID</th>
-      <th>Points</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% leaderboard.forEach((entry, index) => { %>
-    <tr>
-      <td><%= index + 1 %></td>
-      <td><%= entry.playerId %></td>
-      <td><%= entry.points %></td>
-    </tr>
-    <% }) %>
-  </tbody>
-  </table>
-  </tbody>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player ID</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% leaderboard.forEach((entry, index) => { %>
+      <tr>
+        <td><%= index + 1 %></td>
+        <td><%= entry.playerId %></td>
+        <td><%= entry.points %></td>
+      </tr>
+      <% }) %>
+    </tbody>
   </table>
 
   <!-- Buttons for navigation -->
@@ -103,5 +151,4 @@
     <% } %>
   </div>
 </body>
-
 </html>
