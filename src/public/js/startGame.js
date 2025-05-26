@@ -48,11 +48,9 @@ startButton.addEventListener('click', async () => {
         'Content-Type': 'application/json'
       }
     })
-    if (response.ok) {
-      // Emit start game event
-      socket.emit('start game',
-        gameInfo.gameId
-      )
+    if (response.ok) {      // Emit start game event
+      socket.emit('start game', gameInfo.gameId)
+      // The redirect will happen in the socket.on('start game') handler
     }
   } catch (error) {
     console.error('Error starting game:', error)
@@ -60,8 +58,8 @@ startButton.addEventListener('click', async () => {
 })
 
 socket.on('start game', (gameID) => {
-  if (Number(gameID) === Number(gameInfo.gameId)){
-     window.location.href = '/gaming/wordShare'
+  if (Number(gameID) === Number(gameInfo.gameId)) {
+    window.location.href = '/gaming/displayRoles'
   }
 })
 

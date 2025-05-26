@@ -34,7 +34,7 @@ function createApp () {
   io.on('connection', (socket) => {
     socket.on('chat message', (msg, gameID) => {
       try {
-      // Validate the message text
+        // Validate the message text
         if (!msg) {
           throw new Error('Message cannot be empty')
         }
@@ -48,23 +48,34 @@ function createApp () {
 
     socket.on('start game', (gameID) => {
       io.emit('start game', gameID)
+    })
 
-      const timeLimit = Game.findGame(gameID).getTimeLimit()
+    socket.on('share description', (data) => {
+      // Validate game exists
+      const game = Game.findGame(data.gameId)
+      if (!game) {
+        socket.emit('error', { error: 'Game not found' })
+        return
+      }
 
+      // Broadcast to all players in the game
+      io.emit('share description', data.gameId)
+
+      // Start description phase timer if timeLimit is set
+      const timeLimit = game.getTimeLimit()
       if (timeLimit !== 0) {
         let timeLeft = timeLimit * (proportions.description / 100) * 60
         let timeUpdate = ''
 
-        activeTimers[gameID] = setInterval(() => {
+        activeTimers[data.gameId] = setInterval(() => {
           timeUpdate = `Time left: ${timeLeft}s`
-
-          io.emit('time update', timeUpdate, gameID)
+          io.emit('time update', timeUpdate, data.gameId)
           timeLeft--
 
           if (timeLeft < 0) {
-            clearInterval(activeTimers[gameID])
-            delete activeTimers[gameID]
-            io.emit('start discussion', gameID)
+            clearInterval(activeTimers[data.gameId])
+            delete activeTimers[data.gameId]
+            io.emit('start discussion', data.gameId)
           }
         }, 1000)
       }
@@ -74,21 +85,19 @@ function createApp () {
       io.emit('start discussion', gameID)
 
       const timeLimit = Game.findGame(gameID).getTimeLimit()
-
       if (timeLimit !== 0) {
         let timeLeft = timeLimit * (proportions.discussion / 100) * 60
         let timeUpdate = ''
 
         activeTimers[gameID] = setInterval(() => {
           timeUpdate = `Time left: ${timeLeft}s`
-
           io.emit('time update', timeUpdate, gameID)
           timeLeft--
 
           if (timeLeft < 0) {
             clearInterval(activeTimers[gameID])
             delete activeTimers[gameID]
-            io.emit('start discussion', gameID)
+            io.emit('start voting', gameID)
           }
         }, 1000)
       }
@@ -129,16 +138,9 @@ function createApp () {
   app.use('/fonts', express.static(path.join(__dirname, '..', 'public', 'fonts')))
   app.use('/assets', express.static(path.join(__dirname, '..', 'public', 'assets')))
 
-  // The code commented below is for debugging purposes. It returns the request method and URL for each request made to the server.
-  // app.use((req, res, next) => {
-  //   console.log(req.method, req.url)
-  //   next()
-  // })
-
   // Configure routes
   app.use('/admin', admin)
   app.use('/gaming', gaming(io, Game))
-
   app.use('/home', home(io, Game))
   app.use('/', account)
 
@@ -150,16 +152,6 @@ function createApp () {
 
   // Global error handler
   app.use((err, req, res, next) => {
-    // Log error details on server
-    // console.error('Server Error:', {
-    //   timestamp: new Date().toISOString(),
-    //   error: err.message,
-    //   stack: err.stack,
-    //   url: req.url,
-    //   method: req.method,
-    //   statusCode: err.status || 500
-    // })
-
     res.status(err.status || 500)
     res.sendFile(path.join(__dirname, '..', 'views', 'error.html'))
   })

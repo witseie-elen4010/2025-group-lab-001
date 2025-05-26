@@ -19,7 +19,7 @@ module.exports = (io, Game) => {
   const home = express.Router()
 
   home.use((req, res, next) => {
-    if (req.path === '/invite') {
+    if (req.path === '/invite' && req.cookies?.token === undefined) {
       next()
     } else {
       verifyToken(req, res, next)
@@ -144,12 +144,16 @@ module.exports = (io, Game) => {
       return res.redirect(`/join?error=${encodeURIComponent('game-full')}`)
     }
 
-    const playerID = game.generateUniquePlayerID()
-    game.createPlayer(playerID)
-
-    res.cookie('gameID', gameID)
-    res.cookie('playerID', playerID)
-
+    const playerId = req.user.playerId
+    game.createPlayer(playerId)
+    const gameInfo = {
+      gameId: gameID,
+      isHost: false,
+      isSpectator: false,
+      isGuest: true
+    }
+    const newToken = accountFunctions.generateToken(`Guest ${playerId}`, playerId, gameInfo)
+    res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
     res.redirect('/gaming/waiting')
   })
 
@@ -172,15 +176,19 @@ module.exports = (io, Game) => {
         return res.status(403).sendFile(path.join(__dirname, '..', 'views', 'gameFullError.html'))
       }
       // Generate a new player ID for the guest if they don't have one
-      const playerId = accountFunctions.generateGuestPlayerId()
+      let playerId = accountFunctions.generateGuestPlayerId()
+      let username = `Guest ${playerId}`
+      if (req.user?.playerId) { playerId = req.user.playerId }
+      if (req.user?.playerId) { username = req.user?.username }
+      const guest = req.user?.playerId === undefined
       game.createPlayer(playerId)
       const gameInfo = {
         gameId: gameID,
         isHost: false,
         isSpectator: false,
-        isGuest: true
+        isGuest: guest
       }
-      const newToken = accountFunctions.generateToken(`Guest ${playerId}`, playerId, gameInfo)
+      const newToken = accountFunctions.generateToken(username, Number(playerId), gameInfo)
       res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
       res.redirect('/gaming/waiting')
     } else {

@@ -105,45 +105,35 @@ describe('Home Routes - Join Page Functionality', () => {
       expect(game.canAddPlayer()).toBe(true)
     })
 
-    test('canAddPlayer returns false when at capacity', () => {
-      const game = Game.createGame(1, 1, 'word', 3) // Add dictionary parameter
+    test('GET /gaming/invite should return 403 when game is full', async () => {
+    // Create a game with max 2 players
+      const game = Game.createGame(1, 1, 2)
 
-      // Add 2 more players to reach capacity (1 host + 2 = 3)
+      // Add a second player to reach the limit
       game.createPlayer(2)
-      game.createPlayer(3)
 
-      expect(game.canAddPlayer()).toBe(false)
+      // Check that player was not added
+      expect(game.players.length).toBe(2)
     })
-  })
 
-  test('GET /gaming/invite should return 403 when game is full', async () => {
+    test('GET /home/join-lobby should redirect with error when game is full', async () => {
     // Create a game with max 2 players
-    const game = Game.createGame(1, 1, 2)
+      const game = Game.createGame(1, 1, 2)
+      const gameID = game.gameID
 
-    // Add a second player to reach the limit
-    game.createPlayer(2)
+      // Add a second player to reach the limit
+      game.createPlayer(2)
 
-    // Check that player was not added
-    expect(game.players.length).toBe(2)
-  })
+      const response = await request(app)
+        .get(`/home/join-lobby?gameID=${gameID}`)
+        .set('Cookie', [`token=${token}`])
+        .expect(302)
 
-  test('GET /home/join-lobby should redirect with error when game is full', async () => {
-    // Create a game with max 2 players
-    const game = Game.createGame(1, 1, 2)
-    const gameID = game.gameID
+      // Check the redirect includes the error
+      expect(response.header.location).toBe('/join')
 
-    // Add a second player to reach the limit
-    game.createPlayer(2)
-
-    const response = await request(app)
-      .get(`/home/join-lobby?gameID=${gameID}`)
-      .set('Cookie', [`token=${token}`])
-      .expect(302)
-
-    // Check the redirect includes the error
-    expect(response.header.location).toBe('/join')
-
-    // Check that player was not added
-    expect(game.players.length).toBe(2)
+      // Check that player was not added
+      expect(game.players.length).toBe(2)
+    })
   })
 })

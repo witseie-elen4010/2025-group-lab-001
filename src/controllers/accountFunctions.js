@@ -10,8 +10,7 @@ const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 
 let playerIdCounter = 1 // Counter for generating unique player IDs
-
-
+const accounts = []
 // Function to generate a new player ID for guests
 const generateGuestPlayerId = () => {
   return playerIdCounter++
@@ -24,7 +23,6 @@ const transporter = nodemailer.createTransport({
     pass: 'gpda zvoo pjwm azsf'
   }
 })
-
 
 class Account {
   constructor (email, username, password) {
@@ -198,7 +196,6 @@ const generateToken = (username, playerId, gameInfo = null) => {
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' })
   return token
 }
-
 
 // const checkValidUser = async function (username, playerId) {
 //   return accounts.some(account => account.username === username && account.playerId === playerId)
