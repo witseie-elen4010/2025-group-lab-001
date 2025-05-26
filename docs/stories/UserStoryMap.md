@@ -1,9 +1,20 @@
-![User Story Map](UserStoryMapV2.svg)  
+![User Story Map](UpdatedStoryMap.svg)  
 
 ## v 1.0
 
 ### Game room 
 As a player, I want to be able to create a game room/lobby so that I can play.
+
+#### Game Room/Lobby Creation
+
+**Acceptance Criteria**
+
+- I can create a game room or lobby to host a game session.
+- The game room allows me to invite friends or share an access code for others to join.
+- The lobby displays a list of players who have joined.
+- I can configure game settings, such as round duration and difficulty, before starting the game.
+- The game provides clear instructions on how to create and manage a lobby.
+
 ### Join Game 
 As a player, I want to be able to join an existing game so that I can join my group of friends.
 ### Sharing my word
@@ -38,23 +49,9 @@ As a user, I want to be able to reset my password so that I can access my accoun
 As a user, I want to be able to view my stats as so that I can improve/look back on the games played before and see who's the best.
 ### Enhanced Security for fair play
 As a player, I want the game to make it harder for others to cheat by modifying information stored on their devices, so that everyone has a fair and secure experience.
-### Ghost/Goddess of Justice
-As a user, I want to have have the Ghost and The Godess of Justice roles so I can a greater effect on the voting outcome of the game by either participating in voting after being voted out (Ghost) or breaking a tie (Godess of Justice). 
-### The Lovers/falafel vendor
-As a user, I want to have The Lovers/Falafel roles to that the game can have an aspect of co-ops, the lovers are intertwined and share their life in the game, the falafel vendor can choose to save/sabotage someone thus adding a dynamic aspect to the game.
 ### Prompts vs wordlist
 As a user, I want to be able to have the game give me a question/statement instead of a word so that the game can have variety.
-
-## v 4.0
-### Achievements
-As a user, I want to have achievements so I can feel like Ive done something with my life.
 ### Guest Support
 As a user, I want to be able to play as a guest so that I can participate without needing to create an account.
-### Voice Chat
-As a user, I want to be able to talk directly to friends so that I wont have to type long sentences.
-### Change Dictionary
-As a user, I want to be able to choose dictionaries(wordlists) so that I can play with people of varying levels of dificaulty.
-### Misc Settings
-As a user, I want to be able to change game options such as toggling additional roles, enable/disable certian functionalities such as sharing words and chatting so that I can customise the game to my liking.
 ### Game Timing
 As a user, I want to be able to change the timeout duration on game tasks so I can make the game easier/harder depending on the players.
