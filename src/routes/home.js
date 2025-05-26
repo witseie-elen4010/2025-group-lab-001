@@ -144,12 +144,16 @@ module.exports = (io, Game) => {
       return res.redirect(`/join?error=${encodeURIComponent('game-full')}`)
     }
 
-    const playerID = game.generateUniquePlayerID()
-    game.createPlayer(playerID)
-
-    res.cookie('gameID', gameID)
-    res.cookie('playerID', playerID)
-
+    const playerId = req.user.playerId
+    game.createPlayer(playerId)
+    const gameInfo = {
+      gameId: gameID,
+      isHost: false,
+      isSpectator: false,
+      isGuest: true
+    }
+    const newToken = accountFunctions.generateToken(`Guest ${playerId}`, playerId, gameInfo)
+    res.cookie('token', newToken, { secure: process.env.NODE_ENV === 'production', sameSite: 'strict' })
     res.redirect('/gaming/waiting')
   })
 
