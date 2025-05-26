@@ -583,7 +583,7 @@ module.exports = {
   loginAccount,
   generateToken,
   checkValidUser,
-  generateGuestPlayerId
+  generateGuestPlayerId,
   checkIfUser,
   getUsername,
   getEmail,

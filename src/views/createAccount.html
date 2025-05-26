@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <style>
     @font-face {
       font-family: 'body';
       src: url('/fonts/body.ttf') format('truetype');
@@ -19,7 +23,7 @@
     
     body {
       font-family: 'body';
-      background-color: #FFDBDB;
+      background-color: #97EAF4;
       background-image: url('/assets/flamingoes screen 2.png');
       background-size: cover;
       background-position: 0px -260px; /* X-position Y-position in pixels */
@@ -31,6 +35,8 @@
     
     h1, h2, h3, h4, h5, h6 {
       font-family: 'heading';
+       margin-bottom: 20px;
+       margin-top: 10px;
     }
     button {
       background-image: url('/assets/button 1.png');
@@ -50,55 +56,50 @@
       position: relative; /* Enable fine positioning */
       top: 20px; /* Move button down slightly relative to its normal position */
       display: inline-block; /* Ensures proper margin behavior */
+      margin-bottom: 20px;
+      margin-top: 10px;
     }
     /* Optional: Add hover and active effects */
-    button:hover {ner {
-      transform: scale(1.05);space above and below button groups */
-    } display: flex;
-      gap: 15px; /* Space between buttons when in a container */
+    button:hover {
+      transform: scale(1.05);
+    }
+    
     button:active {
       transform: scale(0.95);
-    }* Optional: Add hover and active effects */
-    button:hover {
-    /* Add styling for input fields */
+    }
     input {
       font-family: 'body';
       font-size: 1em;
-    } transform: scale(0.95);
+      transform: scale(0.95);
     }
     
-    ::placeholder {for input fields */
+    ::placeholder {
       font-family: 'body';
       opacity: 0.7; /* Make placeholder slightly transparent teehee*/
-    } font-size: 1em;
-</style>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
-</head>pacity: 0.7; /* Make placeholder slightly transparent teehee*/
+      font-size: 1em;
     }
-<body>e>
+    </style>
+</head>
+<body>
     <form action="/createAccount" method="post">
         <h1>Create Account</h1>
-        <p>Please fill in the following form to create an account</p>1.0">
-        <hr>reate Account</title>
+        <p>Please fill in the following form to create an account</p>
+        <hr>
+        
         <label for="email"><b>Email</b></label>
         <input type="text" placeholder="Enter Email" name="email" required>
-<body>
+        
         <label for="username"><b>Username</b></label>
         <input type="text" placeholder="Enter Username" name="username" required>
-        <p>Please fill in the following form to create an account</p>
+        
         <label for="password"><b>Password</b></label>
         <input type="password" placeholder="Enter Password" name="password" required>
-        <input type="text" placeholder="Enter Email" name="email" required>
+        
         <label for="confirmPassword"><b>Confirm Password</b></label>   
         <input type="password" placeholder="Confirm Password" name="confirmPassword" required>
 
         <button type="submit">Create Account</button>
-        <button type="button" onclick="window.location.href='/login'">Login</button>
     </form>
     <script src="/scripts/accounts.js"></script>
 </body>
-
 </html>
