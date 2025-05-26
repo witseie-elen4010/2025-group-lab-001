@@ -8,7 +8,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 async function adminLogin (req, res) {
   try {
     const { email, password } = req.body
-    console.log(email, password)
 
     // Validate input
     if (!email || !password) {
@@ -19,7 +18,7 @@ async function adminLogin (req, res) {
     const adminPassword = await bcrypt.hash('admin', 10)
 
     if (email !== adminEmail) {
-      return res.status(401).json({ message: 'Invalid credentials' })
+      return res.status(401).json({ message: 'This is a dummy app, but the admin credentials are admin@example.com and admin' })
     }
 
     // Verify password
